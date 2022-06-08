@@ -4,7 +4,6 @@
 package pfcpiface
 
 import (
-	"github.com/omec-project/upf-epc/internal/p4constants"
 	log "github.com/sirupsen/logrus"
 
 	"net"
@@ -185,7 +184,7 @@ func LoadConfigFile(filepath string) (Conf, error) {
 
 	var conf Conf
 	conf.LogLevel = log.InfoLevel
-	conf.P4rtcIface.DefaultTC = uint8(p4constants.EnumTrafficClassElastic)
+	conf.P4rtcIface.DefaultTC = uint8(EnumTrafficClassElastic)
 
 	err = json.Unmarshal(byteValue, &conf)
 	if err != nil {

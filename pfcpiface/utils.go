@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/omec-project/upf-epc/internal/p4constants"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -133,11 +131,11 @@ func GetUnicastAddressFromInterface(interfaceName string) (net.IP, error) {
 }
 
 func GetSliceTCMeterIndex(sliceID uint8, TC uint8) (int64, error) {
-	if sliceID >= (1 << p4constants.BitwidthMfSliceId) {
+	if sliceID >= (1 << BitwidthMfSliceId) {
 		return 0, ErrInvalidArgumentWithReason("SliceID", sliceID, "Slice ID higher than max supported slice ID")
 	}
 
-	if TC >= (1 << p4constants.BitwidthApTc) {
+	if TC >= (1 << BitwidthApTc) {
 		return 0, ErrInvalidArgumentWithReason("TC", TC, "TC higher than max supported Traffic Class")
 	}
 
