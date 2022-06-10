@@ -10,7 +10,6 @@ import (
 	"math/bits"
 	"net"
 
-	"github.com/omec-project/upf-epc/internal/p4constants"
 	p4ConfigV1 "github.com/p4lang/p4runtime/go/p4/config/v1"
 	p4 "github.com/p4lang/p4runtime/go/p4/v1"
 	log "github.com/sirupsen/logrus"

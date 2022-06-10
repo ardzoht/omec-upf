@@ -16,7 +16,6 @@ import (
 
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/omec-project/upf-epc/pfcpiface/bess_pb"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"github.com/wmnsk/go-pfcp/ie"

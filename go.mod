@@ -11,7 +11,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/libp2p/go-reuseport v0.2.0
 	github.com/omec-project/pfcpsim v0.0.0-20220328122841-64474e93876e
-	github.com/omec-project/upf-epc v0.3.0
 	github.com/p4lang/p4runtime v1.3.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
@@ -21,6 +20,3 @@ require (
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
-
-replace github.com/omec-project/upf-epc v0.3.0 => github.com/ardzoht/omec-upf v0.3.0
-replace github.com/omec-project/upf-epc/pfcpiface v0.0.0-20211221090034-aef4648db118 => ../pfcpiface
