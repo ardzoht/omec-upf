@@ -6,7 +6,7 @@ package main
 
 import (
 	"flag"
-	"pfcpiface"
+	"github.com/omec-project/upf-epc/pfcpiface"
 	log "github.com/sirupsen/logrus"
 )
 
