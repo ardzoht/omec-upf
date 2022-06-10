@@ -2,10 +2,6 @@ module github.com/ardzoht/omec-upf
 
 go 1.16
 
-replace github.com/omec-project/upf-epc v0.3.0 => github.com/ardzoht/omec-upf v0.3.0
-
-replace github.com/omec-project/upf-epc/pfcpiface v0.0.0-20211221090034-aef4648db118 => ../pfcpiface
-
 require (
 	github.com/Showmax/go-fqdn v1.0.0
 	github.com/deckarep/golang-set v1.8.0
@@ -25,3 +21,6 @@ require (
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
+
+replace github.com/omec-project/upf-epc v0.3.0 => github.com/ardzoht/omec-upf v0.3.0
+replace github.com/omec-project/upf-epc/pfcpiface v0.0.0-20211221090034-aef4648db118 => ../pfcpiface
