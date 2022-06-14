@@ -12,6 +12,7 @@ import (
 	reuse "github.com/libp2p/go-reuseport"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/omec-project/upf-epc/pfcpiface/metrics"
 )
 
 // PFCPNode represents a PFCP endpoint of the UPF.

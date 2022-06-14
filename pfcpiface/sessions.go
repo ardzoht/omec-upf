@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/omec-project/upf-epc/pfcpiface/metrics"
 )
 
 type PacketForwardingRules struct {
