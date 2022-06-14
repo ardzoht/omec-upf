@@ -1,4 +1,4 @@
-module ardzoht/omec-upf/pfcpiface
+module github.com/ardzoht/upf-epc/pfcpiface
 
 go 1.16
 
@@ -10,7 +10,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/libp2p/go-reuseport v0.2.0
 	github.com/omec-project/pfcpsim v0.0.0-20220328122841-64474e93876e
-	github.com/omec-project/upf-epc v0.3.0
 	github.com/p4lang/p4runtime v1.3.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
