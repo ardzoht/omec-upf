@@ -15,7 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/wmnsk/go-pfcp/ie"
 
-	"github.com/omec-project/upf-epc/pfcpiface/metrics"
 )
 
 const (
