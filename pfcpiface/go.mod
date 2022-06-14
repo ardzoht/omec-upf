@@ -1,4 +1,4 @@
-module github.com/ardzoht/upf-epc/pfcpiface
+module github.com/ardzoht/omec-upf/pfcpiface
 
 go 1.16
 
