@@ -30,7 +30,7 @@ func (d *ebpf) IsConnected(accessIP *net.IP) bool {
 }
 
 func (d *ebpf) Exit() {
-	d.conn.Close()
+	log.Println("Shutting down datapath...")
 }
 
 // SetUpfInfo is only called at pfcp-agent's startup
