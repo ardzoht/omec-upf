@@ -12,6 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// Bit Rates.
+	KB = 1000
+	MB = 1000000
+	GB = 1000000000
+)
+
 // NetworkSlice ... Config received for slice rates and DNN.
 type NetworkSlice struct {
 	SliceName string      `json:"sliceName"`
