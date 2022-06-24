@@ -22,10 +22,8 @@ type ebpf struct {
 }
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
-	if (d.conn == nil) || (d.conn.GetState() != connectivity.Ready) {
-		return false
-	}
-
+	// TODO(ardzoht): Add connection check for server to DP service
+    // Defaulting to true for now to test with PFCPsim
 	return true
 }
 
@@ -52,11 +50,7 @@ func (d *ebpf) PortStats(uc *upfCollector, ch chan<- prometheus.Metric) {
 }
 
 func (d *ebpf) SendEndMarkers(endMarkerList *[][]byte) error {
-	for _, eMarker := range *endMarkerList {
-		d.endMarkerChan <- eMarker
-	}
-
-	return nil
+	panic("Not implemented")
 }
 
 func (d *ebpf) SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) (err error) {
