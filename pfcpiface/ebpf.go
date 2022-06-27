@@ -37,7 +37,31 @@ func (d *ebpf) SetUpfInfo(u *upf, conf *Conf) {
 
 func (d *ebpf) SendMsgToUPF(
 	method upfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
-	panic("Not implemented")
+	var cause uint8 = ie.CauseRequestAccepted
+
+	pdrs := rules.pdrs
+	fars := rules.fars
+	qers := rules.qers
+
+	if method == upfMsgTypeMod {
+		pdrs = updated.pdrs
+		fars = updated.fars
+		qers = updated.qers
+	}
+
+	for _, pdr := range pdrs {
+		log.Traceln(method, pdr)
+	}
+
+	for _, far := range fars {
+		log.Traceln(method, far)
+	}
+
+	for _, qer := range qers {
+		log.Traceln(method, qer)
+	}
+
+	return cause
 }
 
 func (d *ebpf) AddSliceInfo(sliceInfo *SliceInfo) error {
