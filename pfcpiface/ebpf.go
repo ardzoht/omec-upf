@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/wmnsk/go-pfcp/ie"
 
 	"google.golang.org/grpc"
 )
@@ -22,7 +23,7 @@ type ebpf struct {
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
 	// TODO(ardzoht): Add connection check for server to DP service
-    // Defaulting to true for now to test with PFCPsim
+	// Defaulting to true for now to test with PFCPsim
 	return true
 }
 
