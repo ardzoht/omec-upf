@@ -51,15 +51,15 @@ func (d *ebpf) SendMsgToUPF(
 	}
 
 	for _, pdr := range pdrs {
-		log.Traceln(method, pdr)
+		log.Infoln(method, pdr)
 	}
 
 	for _, far := range fars {
-		log.Traceln(method, far)
+		log.Infoln(method, far)
 	}
 
 	for _, qer := range qers {
-		log.Traceln(method, qer)
+		log.Infoln(method, qer)
 	}
 
 	return cause
