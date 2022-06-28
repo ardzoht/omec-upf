@@ -16,3 +16,8 @@ require (
 	github.com/wmnsk/go-pfcp v0.0.14
 	google.golang.org/grpc v1.44.0
 )
+
+retract (
+    [v0.5.0, v0.6.0] // These versions are deprecated
+)
+

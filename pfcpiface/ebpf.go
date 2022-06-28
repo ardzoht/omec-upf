@@ -16,9 +16,6 @@ import (
 
 type ebpf struct {
 	conn             *grpc.ClientConn
-	endMarkerSocket  net.Conn
-	notifyBessSocket net.Conn
-	endMarkerChan    chan []byte
 }
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
@@ -51,15 +48,15 @@ func (d *ebpf) SendMsgToUPF(
 	}
 
 	for _, pdr := range pdrs {
-		log.Infoln(method, pdr)
+		log.Traceln(method, pdr)
 	}
 
 	for _, far := range fars {
-		log.Infoln(method, far)
+		log.Traceln(method, far)
 	}
 
 	for _, qer := range qers {
-		log.Infoln(method, qer)
+		log.Traceln(method, qer)
 	}
 
 	return cause
