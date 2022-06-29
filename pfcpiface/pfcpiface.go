@@ -99,16 +99,6 @@ func (p *PFCPIface) Run() {
 		log.Infoln("http server closed")
 	}()
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
-	signal.Notify(sig, syscall.SIGTERM)
-
-	go func() {
-		oscall := <-sig
-		log.Infof("System call received: %+v", oscall)
-		p.Stop()
-	}()
-
 	// blocking
 	p.node.Serve()
 }

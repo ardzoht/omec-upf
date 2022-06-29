@@ -15,7 +15,7 @@ import (
 )
 
 type ebpf struct {
-	conn             *grpc.ClientConn
+	conn *grpc.ClientConn
 }
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
