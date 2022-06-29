@@ -8,10 +8,7 @@ import (
 	"errors"
 	"flag"
 	"net/http"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
