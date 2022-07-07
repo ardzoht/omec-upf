@@ -222,14 +222,14 @@ func (up4 *UP4) AddSliceInfo(sliceInfo *SliceInfo) error {
 	return nil
 }
 
-func (up4 *UP4) SummaryLatencyJitter(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (up4 *UP4) SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric) {
 }
 
 func (up4 *UP4) SessionStats(*PfcpNodeCollector, chan<- prometheus.Metric) error {
 	return nil
 }
 
-func (up4 *UP4) PortStats(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (up4 *UP4) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
 }
 
 func (up4 *UP4) initCounter(counterID uint8, name string, counterSize uint64) {
@@ -402,7 +402,7 @@ func (up4 *UP4) setConnectedStatus(status bool) {
 }
 
 // TODO: rename it to initUPF()
-func (up4 *UP4) SetUpfInfo(u *upf, conf *Conf) {
+func (up4 *UP4) SetUpfInfo(u *Upf, conf *Conf) {
 	log.Println("SetUpfInfo UP4")
 
 	up4.conf = conf.P4rtcIface
@@ -1529,7 +1529,7 @@ func (up4 *UP4) sendDelete(deleted PacketForwardingRules) error {
 	return nil
 }
 
-func (up4 *UP4) SendMsgToUPF(method upfMsgType, all PacketForwardingRules, updated PacketForwardingRules) uint8 {
+func (up4 *UP4) SendMsgToUPF(method UpfMsgType, all PacketForwardingRules, updated PacketForwardingRules) uint8 {
 	err := up4.tryConnect()
 	if err != nil {
 		log.Error("UP4 server not connected")
