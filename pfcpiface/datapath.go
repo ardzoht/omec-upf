@@ -40,7 +40,7 @@ type Datapath interface {
 	/* set up slice info */
 	AddSliceInfo(sliceInfo *SliceInfo) error
 	/* write endMarker to datapath */
-	SendEndMarkers(endMarkerList *[][]byte) error
+	SendEndMarkers(endMarkerList *[]EndMarker) error
 	/* write pdr/far/qer to datapath */
 	// "master" function to send create/update/delete messages to UPF.
 	// "new" PacketForwardingRules are only used for update messages to UPF.

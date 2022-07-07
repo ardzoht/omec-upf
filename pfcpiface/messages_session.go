@@ -218,7 +218,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	addPDRs := make([]pdr, 0, MaxItems)
 	addFARs := make([]far, 0, MaxItems)
 	addQERs := make([]qer, 0, MaxItems)
-	endMarkerList := make([][]byte, 0, MaxItems)
+	endMarkerList := make([]EndMarker, 0, MaxItems)
 
 	for _, cPDR := range smreq.CreatePDR {
 		var p pdr

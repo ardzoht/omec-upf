@@ -70,7 +70,7 @@ func (d *ebpf) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SendEndMarkers(endMarkerList *[][]byte) error {
+func (d *ebpf) SendEndMarkers(endMarkerList *[]EndMarker) error {
 	panic("Not implemented")
 }
 
