@@ -75,17 +75,16 @@ func (uc *UpfCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect writes all metrics to prometheus metric channel.
 func (uc *UpfCollector) Collect(ch chan<- prometheus.Metric) {
-	uc.summaryLatencyJitter(ch)
-	uc.portStats(ch)
+	// Not implemented
+	return
 }
 
 func (uc *UpfCollector) portStats(ch chan<- prometheus.Metric) {
-	// When operating in sim mode there are no BESS ports
-	uc.upf.PortStats(uc, ch)
+	panic("Not implemented")
 }
 
 func (uc *UpfCollector) summaryLatencyJitter(ch chan<- prometheus.Metric) {
-	uc.upf.SummaryLatencyJitter(uc, ch)
+	panic("Not implemented")
 }
 
 // PfcpNodeCollector makes a PFCPNode Prometheus observable.
@@ -134,13 +133,8 @@ func (col PfcpNodeCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (col PfcpNodeCollector) Collect(ch chan<- prometheus.Metric) {
-	if col.node.upf.enableFlowMeasure {
-		err := col.node.upf.SessionStats(&col, ch)
-		if err != nil {
-			log.Errorln(err)
-			return
-		}
-	}
+	// Not implemented
+	return
 }
 
 func setupProm(mux *http.ServeMux, upf *Upf, node *PFCPNode) (*UpfCollector, *PfcpNodeCollector, error) {
