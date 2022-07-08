@@ -5,8 +5,6 @@ package pfcpiface
 
 import (
 	"net"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type UpfMsgType int
@@ -48,7 +46,4 @@ type Datapath interface {
 	SendMsgToUPF(method UpfMsgType, all PacketForwardingRules, new PacketForwardingRules) uint8
 	/* check of communication channel to datapath is setup */
 	IsConnected(accessIP *net.IP) bool
-	SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric)
-	PortStats(uc *UpfCollector, ch chan<- prometheus.Metric)
-	SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) error
 }
