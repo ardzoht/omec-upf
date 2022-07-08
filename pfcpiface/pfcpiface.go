@@ -52,7 +52,7 @@ func NewPFCPIface(conf Conf, dp Datapath) *PFCPIface {
 
 	pfcpIface.httpEndpoint = ":" + httpPort
 
-	pfcpIface.Upf = NewUPF(&conf, pfcpIface.fp)
+	pfcpIface.Upf = NewUPF(&conf, pfcpIface.Dp)
 
 	return pfcpIface
 }

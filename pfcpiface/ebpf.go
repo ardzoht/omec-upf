@@ -14,26 +14,26 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ebpf struct {
+type Ebpf struct {
 	conn             *grpc.ClientConn
 }
 
-func (d *ebpf) IsConnected(accessIP *net.IP) bool {
+func (d *Ebpf) IsConnected(accessIP *net.IP) bool {
 	// TODO(ardzoht): Add connection check for server to DP service
 	// Defaulting to true for now to test with PFCPsim
 	return true
 }
 
-func (d *ebpf) Exit() {
+func (d *Ebpf) Exit() {
 	log.Println("Shutting down datapath...")
 }
 
 // SetUpfInfo is only called at pfcp-agent's startup
-func (d *ebpf) SetUpfInfo(u *Upf, conf *Conf) {
+func (d *Ebpf) SetUpfInfo(u *Upf, conf *Conf) {
 	log.Println("Setting UPF config...")
 }
 
-func (d *ebpf) SendMsgToUPF(
+func (d *Ebpf) SendMsgToUPF(
 	method UpfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
 	var cause uint8 = ie.CauseRequestAccepted
 
@@ -62,22 +62,22 @@ func (d *ebpf) SendMsgToUPF(
 	return cause
 }
 
-func (d *ebpf) AddSliceInfo(sliceInfo *SliceInfo) error {
+func (d *Ebpf) AddSliceInfo(sliceInfo *SliceInfo) error {
 	panic("Not implemented")
 }
 
-func (d *ebpf) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
+func (d *Ebpf) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SendEndMarkers(endMarkerList *[]EndMarker) error {
+func (d *Ebpf) SendEndMarkers(endMarkerList *[]EndMarker) error {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) (err error) {
+func (d *Ebpf) SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) (err error) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric) {
+func (d *Ebpf) SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }
