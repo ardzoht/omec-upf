@@ -26,24 +26,24 @@ type PFCPIface struct {
 	conf Conf
 
 	node *PFCPNode
-	fp   datapath
-	upf  *upf
+	Dp   Datapath
+	Upf  *Upf
 
 	httpSrv      *http.Server
 	httpEndpoint string
 
-	uc *upfCollector
+	uc *UpfCollector
 	nc *PfcpNodeCollector
 
 	mu sync.Mutex
 }
 
-func NewPFCPIface(conf Conf) *PFCPIface {
+func NewPFCPIface(conf Conf, dp Datapath) *PFCPIface {
 	pfcpIface := &PFCPIface{
 		conf: conf,
 	}
 
-	pfcpIface.fp = &ebpf{}
+	pfcpIface.Dp = dp
 
 	httpPort := "8080"
 	if conf.CPIface.HTTPPort != "" {
@@ -52,7 +52,7 @@ func NewPFCPIface(conf Conf) *PFCPIface {
 
 	pfcpIface.httpEndpoint = ":" + httpPort
 
-	pfcpIface.upf = NewUPF(&conf, pfcpIface.fp)
+	pfcpIface.Upf = NewUPF(&conf, pfcpIface.fp)
 
 	return pfcpIface
 }
@@ -61,14 +61,14 @@ func (p *PFCPIface) mustInit() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.node = NewPFCPNode(p.upf)
+	p.node = NewPFCPNode(p.Upf)
 	httpMux := http.NewServeMux()
 
-	setupConfigHandler(httpMux, p.upf)
+	setupConfigHandler(httpMux, p.Upf)
 
 	var err error
 
-	p.uc, p.nc, err = setupProm(httpMux, p.upf, p.node)
+	p.uc, p.nc, err = setupProm(httpMux, p.Upf, p.node)
 
 	if err != nil {
 		log.Fatalln("setupProm failed", err)
@@ -79,7 +79,7 @@ func (p *PFCPIface) mustInit() {
 
 func (p *PFCPIface) Run() {
 	if simulate.enable() {
-		p.upf.sim(simulate, &p.conf.SimInfo)
+		p.Upf.sim(simulate, &p.conf.SimInfo)
 
 		if !simulate.keepGoing() {
 			return

@@ -28,13 +28,13 @@ type PFCPNode struct {
 	// map of existing connections
 	pConns sync.Map
 	// upf
-	upf *upf
+	upf *Upf
 	// metrics for PFCP messages and sessions
 	metrics metrics.InstrumentPFCP
 }
 
 // NewPFCPNode create a new PFCPNode listening on local address.
-func NewPFCPNode(upf *upf) *PFCPNode {
+func NewPFCPNode(upf *Upf) *PFCPNode {
 	conn, err := reuse.ListenPacket("udp", ":"+PFCPPort)
 	if err != nil {
 		log.Fatalln("ListenUDP failed", err)

@@ -42,10 +42,10 @@ type UeResInfo struct {
 }
 
 type ConfigHandler struct {
-	upf *upf
+	upf *Upf
 }
 
-func setupConfigHandler(mux *http.ServeMux, upf *upf) {
+func setupConfigHandler(mux *http.ServeMux, upf *Upf) {
 	cfgHandler := ConfigHandler{upf: upf}
 	mux.Handle("/v1/config/network-slices", &cfgHandler)
 }
@@ -129,7 +129,7 @@ func calculateBitRates(mbr uint64, rate string) uint64 {
 	}
 }
 
-func handleSliceConfig(nwSlice *NetworkSlice, upf *upf) {
+func handleSliceConfig(nwSlice *NetworkSlice, upf *Upf) {
 	log.Infoln("handle slice config : ", nwSlice.SliceName)
 
 	ulMbr := calculateBitRates(nwSlice.SliceQos.UplinkMbr,

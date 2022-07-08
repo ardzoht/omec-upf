@@ -15,7 +15,7 @@ import (
 )
 
 type ebpf struct {
-	conn *grpc.ClientConn
+	conn             *grpc.ClientConn
 }
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
@@ -29,12 +29,12 @@ func (d *ebpf) Exit() {
 }
 
 // SetUpfInfo is only called at pfcp-agent's startup
-func (d *ebpf) SetUpfInfo(u *upf, conf *Conf) {
+func (d *ebpf) SetUpfInfo(u *Upf, conf *Conf) {
 	log.Println("Setting UPF config...")
 }
 
 func (d *ebpf) SendMsgToUPF(
-	method upfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
+	method UpfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
 	var cause uint8 = ie.CauseRequestAccepted
 
 	pdrs := rules.pdrs
@@ -66,11 +66,11 @@ func (d *ebpf) AddSliceInfo(sliceInfo *SliceInfo) error {
 	panic("Not implemented")
 }
 
-func (d *ebpf) PortStats(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (d *ebpf) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SendEndMarkers(endMarkerList *[][]byte) error {
+func (d *ebpf) SendEndMarkers(endMarkerList *[]EndMarker) error {
 	panic("Not implemented")
 }
 
@@ -78,6 +78,6 @@ func (d *ebpf) SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) 
 	panic("Not implemented")
 }
 
-func (d *ebpf) SummaryLatencyJitter(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (d *ebpf) SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }

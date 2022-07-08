@@ -34,7 +34,7 @@ type UeResource struct {
 	dnn  string
 }
 
-type upf struct {
+type Upf struct {
 	enableUeIPAlloc   bool
 	enableEndMarker   bool
 	enableFlowMeasure bool
@@ -51,7 +51,7 @@ type upf struct {
 	sliceInfo         *SliceInfo
 	readTimeout       time.Duration
 
-	datapath
+	Datapath
 	maxReqRetries uint8
 	respTimeout   time.Duration
 	enableHBTimer bool
@@ -74,21 +74,21 @@ const (
 	n9 = 0x2
 )
 
-func (u *upf) isConnected() bool {
-	return u.datapath.IsConnected(&u.accessIP)
+func (u *Upf) isConnected() bool {
+	return u.Datapath.IsConnected(&u.accessIP)
 }
 
-func (u *upf) addSliceInfo(sliceInfo *SliceInfo) error {
+func (u *Upf) addSliceInfo(sliceInfo *SliceInfo) error {
 	if sliceInfo == nil {
 		return ErrInvalidArgument("sliceInfo", sliceInfo)
 	}
 
 	u.sliceInfo = sliceInfo
 
-	return u.datapath.AddSliceInfo(sliceInfo)
+	return u.Datapath.AddSliceInfo(sliceInfo)
 }
 
-func NewUPF(conf *Conf, fp datapath) *upf {
+func NewUPF(conf *Conf, fp Datapath) *Upf {
 	var (
 		err    error
 		nodeID string
@@ -112,7 +112,7 @@ func NewUPF(conf *Conf, fp datapath) *upf {
 		nodeID = hosts[0]
 	}
 
-	u := &upf{
+	u := &Upf{
 		enableUeIPAlloc:   conf.CPIface.EnableUeIPAlloc,
 		enableEndMarker:   conf.EnableEndMarker,
 		enableFlowMeasure: conf.EnableFlowMeasure,
@@ -120,7 +120,7 @@ func NewUPF(conf *Conf, fp datapath) *upf {
 		coreIface:         conf.CoreIface.IfName,
 		ippoolCidr:        conf.CPIface.UEIPPool,
 		nodeID:            nodeID,
-		datapath:          fp,
+		Datapath:          fp,
 		dnn:               conf.CPIface.Dnn,
 		peers:             conf.CPIface.Peers,
 		reportNotifyChan:  make(chan uint64, 1024),
@@ -173,7 +173,7 @@ func NewUPF(conf *Conf, fp datapath) *upf {
 		}
 	}
 
-	u.datapath.SetUpfInfo(u, conf)
+	u.Datapath.SetUpfInfo(u, conf)
 
 	return u
 }
