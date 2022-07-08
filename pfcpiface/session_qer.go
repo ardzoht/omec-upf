@@ -16,14 +16,14 @@ const (
 
 // CreateQER appends qer to existing list of QERs in the session.
 func (s *PFCPSession) CreateQER(q qer) {
-	s.qers = append(s.qers, q)
+	s.Qers = append(s.Qers, q)
 }
 
 // UpdateQER updates existing qer in the session.
 func (s *PFCPSession) UpdateQER(q qer) error {
-	for idx, v := range s.qers {
+	for idx, v := range s.Qers {
 		if v.qerID == q.qerID {
-			s.qers[idx] = q
+			s.Qers[idx] = q
 			return nil
 		}
 	}
@@ -67,9 +67,9 @@ func findItemIndex(slice []uint32, val uint32) int {
 // MarkSessionQer : identify and Mark session QER with flag.
 func (s *PFCPSession) MarkSessionQer(qers []qer) {
 	sessQerIDList := make([]uint32, 0)
-	lastPdrIndex := len(s.pdrs) - 1
+	lastPdrIndex := len(s.Pdrs) - 1
 	// create search list with first pdr's qerlist */
-	sessQerIDList = append(sessQerIDList, s.pdrs[lastPdrIndex].qerIDList...)
+	sessQerIDList = append(sessQerIDList, s.Pdrs[lastPdrIndex].qerIDList...)
 
 	// If PDRs have no QERs, then no marking for session qers is needed.
 	// If PDRS have one QER and all PDRs point to same QER, then consider it as application qer.
@@ -80,9 +80,9 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 	}
 
 	// loop around all pdrs and find matching qers.
-	for i := range s.pdrs {
+	for i := range s.Pdrs {
 		// match every qer in searchlist in pdr's qer list
-		sList := Intersect(sessQerIDList, s.pdrs[i].qerIDList)
+		sList := Intersect(sessQerIDList, s.Pdrs[i].qerIDList)
 		if len(sList) == 0 {
 			return
 		}
@@ -127,21 +127,21 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 
 	qers[sessionIdx].qosLevel = SessionQos
 
-	for i := range s.pdrs {
+	for i := range s.Pdrs {
 		// remove common qerID from pdr's qer list
-		idx := findItemIndex(s.pdrs[i].qerIDList, sessQerID)
-		if idx != len(s.pdrs[i].qerIDList) {
-			s.pdrs[i].qerIDList = append(s.pdrs[i].qerIDList[:idx], s.pdrs[i].qerIDList[idx+1:]...)
-			s.pdrs[i].qerIDList = append(s.pdrs[i].qerIDList, sessQerID)
+		idx := findItemIndex(s.Pdrs[i].qerIDList, sessQerID)
+		if idx != len(s.Pdrs[i].qerIDList) {
+			s.Pdrs[i].qerIDList = append(s.Pdrs[i].qerIDList[:idx], s.Pdrs[i].qerIDList[idx+1:]...)
+			s.Pdrs[i].qerIDList = append(s.Pdrs[i].qerIDList, sessQerID)
 		}
 	}
 }
 
 // RemoveQER removes qer from existing list of QERs in the session.
 func (s *PFCPSession) RemoveQER(id uint32) (*qer, error) {
-	for idx, v := range s.qers {
+	for idx, v := range s.Qers {
 		if v.qerID == id {
-			s.qers = append(s.qers[:idx], s.qers[idx+1:]...)
+			s.Qers = append(s.Qers[:idx], s.Qers[idx+1:]...)
 			return &v, nil
 		}
 	}

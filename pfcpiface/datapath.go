@@ -12,20 +12,20 @@ import (
 type UpfMsgType int
 
 const (
-	upfMsgTypeAdd UpfMsgType = iota
-	upfMsgTypeMod
-	upfMsgTypeDel
-	upfMsgTypeClear
+	UpfMsgTypeAdd UpfMsgType = iota
+	UpfMsgTypeMod
+	UpfMsgTypeDel
+	UpfMsgTypeClear
 )
 
 func (u UpfMsgType) String() string {
-	if u == upfMsgTypeAdd {
+	if u == UpfMsgTypeAdd {
 		return "add"
-	} else if u == upfMsgTypeMod {
+	} else if u == UpfMsgTypeMod {
 		return "modify"
-	} else if u == upfMsgTypeDel {
+	} else if u == UpfMsgTypeDel {
 		return "delete" //nolint
-	} else if u == upfMsgTypeClear {
+	} else if u == UpfMsgTypeClear {
 		return "clear"
 	} else {
 		return "unknown"

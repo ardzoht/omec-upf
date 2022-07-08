@@ -16,7 +16,7 @@ func releaseAllocatedIPs(ippool *IPPool, session *PFCPSession) error {
 	log.Println("release allocated IP")
 
 	// Check if we allocated an UE IP for this session and delete it.
-	for _, pdr := range session.pdrs {
+	for _, pdr := range session.Pdrs {
 		if (pdr.allocIPFlag) && (pdr.srcIface == core) {
 			var ueIP net.IP = int2ip(pdr.ueAddress)
 
@@ -33,7 +33,7 @@ func addPdrInfo(msg *message.SessionEstablishmentResponse,
 	session *PFCPSession) {
 	log.Println("Add PDRs with UPF alloc IPs to Establishment response")
 
-	for _, pdr := range session.pdrs {
+	for _, pdr := range session.Pdrs {
 		if (pdr.allocIPFlag) && (pdr.srcIface == core) {
 			log.Println("pdrID : ", pdr.pdrID)
 
@@ -54,14 +54,14 @@ func addPdrInfo(msg *message.SessionEstablishmentResponse,
 
 // CreatePDR appends pdr to existing list of PDRs in the session.
 func (s *PFCPSession) CreatePDR(p pdr) {
-	s.pdrs = append(s.pdrs, p)
+	s.Pdrs = append(s.Pdrs, p)
 }
 
 // UpdatePDR updates existing pdr in the session.
 func (s *PFCPSession) UpdatePDR(p pdr) error {
-	for idx, v := range s.pdrs {
+	for idx, v := range s.Pdrs {
 		if v.pdrID == p.pdrID {
-			s.pdrs[idx] = p
+			s.Pdrs[idx] = p
 			return nil
 		}
 	}
@@ -71,9 +71,9 @@ func (s *PFCPSession) UpdatePDR(p pdr) error {
 
 // RemovePDR removes pdr from existing list of PDRs in the session.
 func (s *PFCPSession) RemovePDR(id uint32) (*pdr, error) {
-	for idx, v := range s.pdrs {
+	for idx, v := range s.Pdrs {
 		if v.pdrID == id {
-			s.pdrs = append(s.pdrs[:idx], s.pdrs[idx+1:]...)
+			s.Pdrs = append(s.Pdrs[:idx], s.Pdrs[idx+1:]...)
 			return &v, nil
 		}
 	}

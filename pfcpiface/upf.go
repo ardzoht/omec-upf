@@ -41,9 +41,9 @@ type Upf struct {
 	accessIface       string
 	coreIface         string
 	ippoolCidr        string
-	accessIP          net.IP
-	coreIP            net.IP
-	nodeID            string
+	AccessIP          net.IP
+	CoreIP            net.IP
+	NodeID            string
 	ippool            *IPPool
 	peers             []string
 	dnn               string
@@ -75,7 +75,7 @@ const (
 )
 
 func (u *Upf) isConnected() bool {
-	return u.Datapath.IsConnected(&u.accessIP)
+	return u.Datapath.IsConnected(&u.AccessIP)
 }
 
 func (u *Upf) addSliceInfo(sliceInfo *SliceInfo) error {
@@ -119,7 +119,7 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 		accessIface:       conf.AccessIface.IfName,
 		coreIface:         conf.CoreIface.IfName,
 		ippoolCidr:        conf.CPIface.UEIPPool,
-		nodeID:            nodeID,
+		NodeID:            nodeID,
 		Datapath:          fp,
 		dnn:               conf.CPIface.Dnn,
 		peers:             conf.CPIface.Peers,
@@ -139,13 +139,13 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 	}
 
 	if !conf.EnableP4rt {
-		u.accessIP, err = GetUnicastAddressFromInterface(conf.AccessIface.IfName)
+		u.AccessIP, err = GetUnicastAddressFromInterface(conf.AccessIface.IfName)
 		if err != nil {
 			log.Errorln(err)
 			return nil
 		}
 
-		u.coreIP, err = GetUnicastAddressFromInterface(conf.CoreIface.IfName)
+		u.CoreIP, err = GetUnicastAddressFromInterface(conf.CoreIface.IfName)
 		if err != nil {
 			log.Errorln(err)
 			return nil

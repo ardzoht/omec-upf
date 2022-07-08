@@ -37,14 +37,14 @@ func (d *Ebpf) SendMsgToUPF(
 	method UpfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
 	var cause uint8 = ie.CauseRequestAccepted
 
-	pdrs := rules.pdrs
-	fars := rules.fars
-	qers := rules.qers
+	pdrs := rules.Pdrs
+	fars := rules.Fars
+	qers := rules.Qers
 
-	if method == upfMsgTypeMod {
-		pdrs = updated.pdrs
-		fars = updated.fars
-		qers = updated.qers
+	if method == UpfMsgTypeMod {
+		pdrs = updated.Pdrs
+		fars = updated.Fars
+		qers = updated.Qers
 	}
 
 	for _, pdr := range pdrs {

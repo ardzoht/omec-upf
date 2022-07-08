@@ -12,9 +12,9 @@ import (
 )
 
 type PacketForwardingRules struct {
-	pdrs []pdr
-	fars []far
-	qers []qer
+	Pdrs []pdr
+	Fars []far
+	Qers []qer
 }
 
 // PFCPSession implements one PFCP session.
@@ -26,7 +26,7 @@ type PFCPSession struct {
 }
 
 func (p PacketForwardingRules) String() string {
-	return fmt.Sprintf("PDRs=%v, FARs=%v, QERs=%v", p.pdrs, p.fars, p.qers)
+	return fmt.Sprintf("PDRs=%v, FARs=%v, QERs=%v", p.Pdrs, p.Fars, p.Qers)
 }
 
 // NewPFCPSession allocates an session with ID.
@@ -42,9 +42,9 @@ func (pConn *PFCPConn) NewPFCPSession(rseid uint64) (PFCPSession, bool) {
 			localSEID:  lseid,
 			remoteSEID: rseid,
 			PacketForwardingRules: PacketForwardingRules{
-				pdrs: make([]pdr, 0, MaxItems),
-				fars: make([]far, 0, MaxItems),
-				qers: make([]qer, 0, MaxItems),
+				Pdrs: make([]pdr, 0, MaxItems),
+				Fars: make([]far, 0, MaxItems),
+				Qers: make([]qer, 0, MaxItems),
 			},
 		}
 		s.metrics = metrics.NewSession(pConn.nodeID.remote)

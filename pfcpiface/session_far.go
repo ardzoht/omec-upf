@@ -19,7 +19,7 @@ type EndMarker struct {
 
 // CreateFAR appends far to existing list of FARs in the session.
 func (s *PFCPSession) CreateFAR(f far) {
-	s.fars = append(s.fars, f)
+	s.Fars = append(s.Fars, f)
 }
 
 func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
@@ -87,13 +87,13 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 
 // UpdateFAR updates existing far in the session.
 func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[]EndMarker) error {
-	for idx, v := range s.fars {
+	for idx, v := range s.Fars {
 		if v.farID == f.farID {
 			if f.sendEndMarker {
 				addEndMarkerForGtp(v, endMarkerList)
 			}
 
-			s.fars[idx] = *f
+			s.Fars[idx] = *f
 
 			return nil
 		}
@@ -104,9 +104,9 @@ func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[]EndMarker) error {
 
 // RemoveFAR removes far from existing list of FARs in the session.
 func (s *PFCPSession) RemoveFAR(id uint32) (*far, error) {
-	for idx, v := range s.fars {
+	for idx, v := range s.Fars {
 		if v.farID == id {
-			s.fars = append(s.fars[:idx], s.fars[idx+1:]...)
+			s.Fars = append(s.Fars[:idx], s.Fars[idx+1:]...)
 			return &v, nil
 		}
 	}

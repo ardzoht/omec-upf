@@ -139,7 +139,7 @@ func (node *PFCPNode) NewPFCPConn(lAddr, rAddr string, buf []byte) *PFCPConn {
 		hbCtxCancel:    nil,
 	}
 
-	p.setLocalNodeID(node.upf.nodeID)
+	p.setLocalNodeID(node.upf.NodeID)
 
 	if buf != nil {
 		// TODO: Check if the first msg is Association Setup Request
@@ -242,7 +242,7 @@ func (pConn *PFCPConn) Shutdown() {
 
 	// Cleanup all sessions in this conn
 	for _, sess := range pConn.store.GetAllSessions() {
-		pConn.upf.SendMsgToUPF(upfMsgTypeDel, sess.PacketForwardingRules, PacketForwardingRules{})
+		pConn.upf.SendMsgToUPF(UpfMsgTypeDel, sess.PacketForwardingRules, PacketForwardingRules{})
 		pConn.RemoveSession(sess)
 	}
 
