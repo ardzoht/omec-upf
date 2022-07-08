@@ -25,8 +25,8 @@ func makeBuckets(values []uint64) map[float64]float64 {
 	return buckets
 }
 
-// upfCollector provides all UPF metrics.
-type upfCollector struct {
+// UpfCollector provides all UPF metrics.
+type UpfCollector struct {
 	packets *prometheus.Desc
 	bytes   *prometheus.Desc
 	dropped *prometheus.Desc
@@ -34,11 +34,11 @@ type upfCollector struct {
 	latency *prometheus.Desc
 	jitter  *prometheus.Desc
 
-	upf *upf
+	upf *Upf
 }
 
-func newUpfCollector(upf *upf) *upfCollector {
-	return &upfCollector{
+func newUpfCollector(upf *Upf) *UpfCollector {
+	return &UpfCollector{
 		packets: prometheus.NewDesc(prometheus.BuildFQName("upf", "packets", "count"),
 			"Shows the number of packets received by the UPF port",
 			[]string{"iface", "dir"}, nil,
@@ -64,7 +64,7 @@ func newUpfCollector(upf *upf) *upfCollector {
 }
 
 // Describe writes all descriptors to the prometheus desc channel.
-func (uc *upfCollector) Describe(ch chan<- *prometheus.Desc) {
+func (uc *UpfCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- uc.packets
 	ch <- uc.bytes
 	ch <- uc.dropped
@@ -74,17 +74,17 @@ func (uc *upfCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect writes all metrics to prometheus metric channel.
-func (uc *upfCollector) Collect(ch chan<- prometheus.Metric) {
+func (uc *UpfCollector) Collect(ch chan<- prometheus.Metric) {
 	uc.summaryLatencyJitter(ch)
 	uc.portStats(ch)
 }
 
-func (uc *upfCollector) portStats(ch chan<- prometheus.Metric) {
+func (uc *UpfCollector) portStats(ch chan<- prometheus.Metric) {
 	// When operating in sim mode there are no BESS ports
 	uc.upf.PortStats(uc, ch)
 }
 
-func (uc *upfCollector) summaryLatencyJitter(ch chan<- prometheus.Metric) {
+func (uc *UpfCollector) summaryLatencyJitter(ch chan<- prometheus.Metric) {
 	uc.upf.SummaryLatencyJitter(uc, ch)
 }
 
@@ -143,7 +143,7 @@ func (col PfcpNodeCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func setupProm(mux *http.ServeMux, upf *upf, node *PFCPNode) (*upfCollector, *PfcpNodeCollector, error) {
+func setupProm(mux *http.ServeMux, upf *Upf, node *PFCPNode) (*UpfCollector, *PfcpNodeCollector, error) {
 	uc := newUpfCollector(upf)
 	if err := prometheus.Register(uc); err != nil {
 		return nil, nil, err
@@ -159,9 +159,9 @@ func setupProm(mux *http.ServeMux, upf *upf, node *PFCPNode) (*upfCollector, *Pf
 	return uc, nc, nil
 }
 
-func clearProm(uc *upfCollector, nc *PfcpNodeCollector) {
+func clearProm(uc *UpfCollector, nc *PfcpNodeCollector) {
 	if ok := prometheus.Unregister(uc); !ok {
-		log.Warnln("Failed to unregister upfCollector")
+		log.Warnln("Failed to unregister UpfCollector")
 	}
 
 	if ok := prometheus.Unregister(nc); !ok {

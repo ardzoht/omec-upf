@@ -29,13 +29,13 @@ type PFCPIface struct {
 	conf Conf
 
 	node *PFCPNode
-	fp   datapath
-	upf  *upf
+	fp   Datapath
+	upf  *Upf
 
 	httpSrv      *http.Server
 	httpEndpoint string
 
-	uc *upfCollector
+	uc *UpfCollector
 	nc *PfcpNodeCollector
 
 	mu sync.Mutex
@@ -47,6 +47,25 @@ func NewPFCPIface(conf Conf) *PFCPIface {
 	}
 
 	pfcpIface.fp = &ebpf{}
+
+	httpPort := "8080"
+	if conf.CPIface.HTTPPort != "" {
+		httpPort = conf.CPIface.HTTPPort
+	}
+
+	pfcpIface.httpEndpoint = ":" + httpPort
+
+	pfcpIface.upf = NewUPF(&conf, pfcpIface.fp)
+
+	return pfcpIface
+}
+
+func NewPFCPIfaceWithDp(conf Conf, dp Datapath) *PFCPIface {
+	pfcpIface := &PFCPIface{
+		conf: conf,
+	}
+
+	pfcpIface.fp = dp
 
 	httpPort := "8080"
 	if conf.CPIface.HTTPPort != "" {

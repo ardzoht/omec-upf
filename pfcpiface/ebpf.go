@@ -9,23 +9,18 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/wmnsk/go-pfcp/ie"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 )
 
 type ebpf struct {
 	conn             *grpc.ClientConn
-	endMarkerSocket  net.Conn
-	notifyBessSocket net.Conn
-	endMarkerChan    chan []byte
 }
 
 func (d *ebpf) IsConnected(accessIP *net.IP) bool {
-	if (d.conn == nil) || (d.conn.GetState() != connectivity.Ready) {
-		return false
-	}
-
+	// TODO(ardzoht): Add connection check for server to DP service
+	// Defaulting to true for now to test with PFCPsim
 	return true
 }
 
@@ -34,35 +29,55 @@ func (d *ebpf) Exit() {
 }
 
 // SetUpfInfo is only called at pfcp-agent's startup
-func (d *ebpf) SetUpfInfo(u *upf, conf *Conf) {
+func (d *ebpf) SetUpfInfo(u *Upf, conf *Conf) {
 	log.Println("Setting UPF config...")
 }
 
 func (d *ebpf) SendMsgToUPF(
-	method upfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
-	panic("Not implemented")
+	method UpfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
+	var cause uint8 = ie.CauseRequestAccepted
+
+	pdrs := rules.pdrs
+	fars := rules.fars
+	qers := rules.qers
+
+	if method == upfMsgTypeMod {
+		pdrs = updated.pdrs
+		fars = updated.fars
+		qers = updated.qers
+	}
+
+	for _, pdr := range pdrs {
+		log.Traceln(method, pdr)
+	}
+
+	for _, far := range fars {
+		log.Traceln(method, far)
+	}
+
+	for _, qer := range qers {
+		log.Traceln(method, qer)
+	}
+
+	return cause
 }
 
 func (d *ebpf) AddSliceInfo(sliceInfo *SliceInfo) error {
 	panic("Not implemented")
 }
 
-func (d *ebpf) PortStats(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (d *ebpf) PortStats(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SendEndMarkers(endMarkerList *[][]byte) error {
-	for _, eMarker := range *endMarkerList {
-		d.endMarkerChan <- eMarker
-	}
-
-	return nil
+func (d *ebpf) SendEndMarkers(endMarkerList *[]EndMarker) error {
+	panic("Not implemented")
 }
 
 func (d *ebpf) SessionStats(pc *PfcpNodeCollector, ch chan<- prometheus.Metric) (err error) {
 	panic("Not implemented")
 }
 
-func (d *ebpf) SummaryLatencyJitter(uc *upfCollector, ch chan<- prometheus.Metric) {
+func (d *ebpf) SummaryLatencyJitter(uc *UpfCollector, ch chan<- prometheus.Metric) {
 	panic("Not implemented")
 }

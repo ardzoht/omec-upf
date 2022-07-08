@@ -11,9 +11,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type EndMarker struct {
+	TEID uint32
+	PeerIP net.IP
+	PeerPort uint16
+}
+
 // CreateFAR appends far to existing list of FARs in the session.
 func (s *PFCPSession) CreateFAR(f far) {
 	s.fars = append(s.fars, f)
+}
+
+func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
+	newEndMarker := EndMarker{
+		TEID: farItem.tunnelTEID,
+		PeerIP: int2ip(farItem.tunnelIP4Dst),
+		PeerPort: farItem.tunnelPort,
+	}
+	*endMarkerList = append(*endMarkerList, newEndMarker)
 }
 
 func addEndMarker(farItem far, endMarkerList *[][]byte) {
@@ -71,11 +86,11 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 }
 
 // UpdateFAR updates existing far in the session.
-func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[][]byte) error {
+func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[]EndMarker) error {
 	for idx, v := range s.fars {
 		if v.farID == f.farID {
 			if f.sendEndMarker {
-				addEndMarker(v, endMarkerList)
+				addEndMarkerForGtp(v, endMarkerList)
 			}
 
 			s.fars[idx] = *f
