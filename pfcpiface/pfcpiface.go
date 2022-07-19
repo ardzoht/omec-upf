@@ -52,6 +52,8 @@ func NewPFCPIface(conf Conf, dp Datapath) *PFCPIface {
 
 	pfcpIface.Upf = NewUPF(&conf, pfcpIface.Dp)
 
+	Zap_init()
+
 	return pfcpIface
 }
 
