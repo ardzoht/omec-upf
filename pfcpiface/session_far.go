@@ -8,12 +8,11 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	log "github.com/sirupsen/logrus"
 )
 
 type EndMarker struct {
-	TEID uint32
-	PeerIP net.IP
+	TEID     uint32
+	PeerIP   net.IP
 	PeerPort uint16
 }
 
@@ -24,8 +23,8 @@ func (s *PFCPSession) CreateFAR(f far) {
 
 func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
 	newEndMarker := EndMarker{
-		TEID: farItem.tunnelTEID,
-		PeerIP: int2ip(farItem.tunnelIP4Dst),
+		TEID:     farItem.tunnelTEID,
+		PeerIP:   int2ip(farItem.tunnelIP4Dst),
 		PeerPort: farItem.tunnelPort,
 	}
 	*endMarkerList = append(*endMarkerList, newEndMarker)
@@ -33,7 +32,7 @@ func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
 
 func addEndMarker(farItem far, endMarkerList *[][]byte) {
 	// This time lets fill out some information
-	log.Println("Adding end Marker for farID : ", farItem.farID)
+	log.Info("Adding end Marker for farID : ", farItem.farID)
 
 	options := gopacket.SerializeOptions{
 		ComputeChecksums: true,
@@ -59,7 +58,7 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 
 	err := udpLayer.SetNetworkLayerForChecksum(ipLayer)
 	if err != nil {
-		log.Println("set checksum for UDP layer in endmarker failed")
+		log.Info("set checksum for UDP layer in endmarker failed")
 		return
 	}
 
@@ -81,7 +80,7 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 		outgoingPacket := buffer.Bytes()
 		*endMarkerList = append(*endMarkerList, outgoingPacket)
 	} else {
-		log.Println("go packet serialize failed : ", err)
+		log.Info("go packet serialize failed : ", err)
 	}
 }
 

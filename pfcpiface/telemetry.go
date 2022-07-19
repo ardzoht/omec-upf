@@ -6,8 +6,6 @@ package pfcpiface
 import (
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -155,10 +153,10 @@ func setupProm(mux *http.ServeMux, upf *Upf, node *PFCPNode) (*UpfCollector, *Pf
 
 func clearProm(uc *UpfCollector, nc *PfcpNodeCollector) {
 	if ok := prometheus.Unregister(uc); !ok {
-		log.Warnln("Failed to unregister UpfCollector")
+		log.Warn("Failed to unregister UpfCollector")
 	}
 
 	if ok := prometheus.Unregister(nc); !ok {
-		log.Warnln("Failed to unregister PfcpNodeCollector")
+		log.Warn("Failed to unregister PfcpNodeCollector")
 	}
 }

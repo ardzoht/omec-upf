@@ -4,6 +4,8 @@
 package pfcpiface
 
 import (
+	"os"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -12,6 +14,11 @@ import (
 	"sync"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	Zap_init()
+	os.Exit(m.Run())
+}
 
 func TestNewIPPool(t *testing.T) {
 	tests := []struct {

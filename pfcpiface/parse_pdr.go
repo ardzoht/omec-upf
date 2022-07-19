@@ -10,8 +10,8 @@ import (
 	"math"
 	"net"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/wmnsk/go-pfcp/ie"
+	"go.uber.org/zap"
 )
 
 // portRange encapsulates a L4 port range as seen in PDRs. A zero value portRange represents
@@ -342,11 +342,11 @@ func (p *pdr) parseUEAddressIE(ueAddrIE *ie.IE, ippool *IPPool) error {
 
 		ueIP4, err = ippool.LookupOrAllocIP(p.fseID)
 		if err != nil {
-			log.Errorln("failed to allocate UE IP")
+			log.Error("failed to allocate UE IP")
 			return err
 		}
 
-		log.Traceln("Found or allocated new IP", ueIP4, "from pool", ippool)
+		log.Debugf("Found or allocated new IP %v from pool %v", ueIP4, ippool)
 
 		p.allocIPFlag = true
 	} else {
@@ -414,15 +414,15 @@ func (p *pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 	}
 
 	if appID != apfd.appID {
-		log.Fatalln("Mismatch in App ID", appID, apfd.appID)
+		log.Fatalf("Mismatch in App ID %v %v", appID, apfd.appID)
 	}
 
 	for _, flowDesc := range apfd.flowDescs {
-		logger := log.WithFields(log.Fields{
-			"Application ID":   apfd.appID,
-			"Flow Description": flowDesc,
-		})
-		logger.Debug("Parsing flow description of Application ID IE")
+		log.Debugw(
+			"Parsing flow description of Application ID IE",
+			zap.String("Application ID", apfd.appID),
+			zap.String("Flow Description", flowDesc),
+		)
 
 		ipf, err := parseFlowDesc(flowDesc, int2ip(p.ueAddress).String())
 		if err != nil {
@@ -431,7 +431,11 @@ func (p *pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 
 		if (p.srcIface == access && ipf.direction == "out") ||
 			(p.srcIface == core && ipf.direction == "in") {
-			logger.Debug("Found a matching flow description")
+			log.Debugw(
+				"Found a matching flow description",
+				zap.String("Application ID", apfd.appID),
+				zap.String("Flow Description", flowDesc),
+			)
 
 			if ipf.proto != reservedProto {
 				p.appFilter.proto = ipf.proto
@@ -463,9 +467,10 @@ func (p *pdr) parseSDFFilter(ie *ie.IE) error {
 		return ErrOperationFailedWithReason("parse SDF Filter", "empty filter description")
 	}
 
-	log.WithFields(log.Fields{
-		"Flow Description": flowDesc,
-	}).Debug("Parsing Flow Description from SDF Filter")
+	log.Debugw(
+		"Parsing Flow Description from SDF Filter",
+		zap.String("Flow Description", flowDesc),
+	)
 
 	ipf, err := parseFlowDesc(flowDesc, int2ip(p.ueAddress).String())
 	if err != nil {
@@ -569,19 +574,19 @@ func (p *pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippoo
 
 	pdrID, err := ie1.PDRID()
 	if err != nil {
-		log.Println("Could not read PDR ID!")
+		log.Info("Could not read PDR ID!")
 		return err
 	}
 
 	precedence, err := ie1.Precedence()
 	if err != nil {
-		log.Println("Could not read Precedence!")
+		log.Info("Could not read Precedence!")
 		return err
 	}
 
 	pdi, err := ie1.PDI()
 	if err != nil {
-		log.Println("Could not read PDI!")
+		log.Info("Could not read PDI!")
 		return err
 	}
 
@@ -597,7 +602,7 @@ func (p *pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippoo
 
 	farID, err := ie1.FARID()
 	if err != nil {
-		log.Println("Could not read FAR ID!")
+		log.Info("Could not read FAR ID!")
 		return err
 	}
 
@@ -625,7 +630,7 @@ func (p *pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippoo
 		if x.Type == ie.QERID {
 			qerID, errRead := x.QERID()
 			if errRead != nil {
-				log.Errorln("qerID read failed")
+				log.Error("qerID read failed")
 				continue
 			} else {
 				p.qerIDList = append(p.qerIDList, qerID)

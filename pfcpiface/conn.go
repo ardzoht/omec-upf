@@ -12,8 +12,8 @@ import (
 	"time"
 
 	reuse "github.com/libp2p/go-reuseport"
-	log "github.com/sirupsen/logrus"
 	"github.com/wmnsk/go-pfcp/ie"
+	"go.uber.org/zap"
 
 	"github.com/omec-project/upf-epc/pfcpiface/metrics"
 )
@@ -79,23 +79,24 @@ func (pConn *PFCPConn) startHeartBeatMonitor() {
 	hbCtx, hbCancel := context.WithCancel(pConn.ctx)
 	pConn.hbCtxCancel = hbCancel
 
-	log.WithFields(log.Fields{
-		"interval": pConn.upf.hbInterval,
-	}).Infoln("Starting Heartbeat timer")
+	log.Infow(
+		"Starting Heartbeat timer",
+		zap.Duration("interval", pConn.upf.hbInterval),
+	)
 
 	heartBeatExpiryTimer := time.NewTicker(pConn.upf.hbInterval)
 
 	for {
 		select {
 		case <-hbCtx.Done():
-			log.Infoln("Cancel HeartBeat Timer", pConn.RemoteAddr().String())
+			log.Info("Cancel HeartBeat Timer ", pConn.RemoteAddr().String())
 			heartBeatExpiryTimer.Stop()
 
 			return
 		case <-pConn.hbReset:
 			heartBeatExpiryTimer.Reset(pConn.upf.hbInterval)
 		case <-heartBeatExpiryTimer.C:
-			log.Traceln("HeartBeat Interval Timer Expired", pConn.RemoteAddr().String())
+			log.Debug("HeartBeat Interval Timer Expired ", pConn.RemoteAddr().String())
 
 			r := pConn.getHeartBeatRequest()
 
@@ -112,7 +113,7 @@ func (pConn *PFCPConn) startHeartBeatMonitor() {
 func (node *PFCPNode) NewPFCPConn(lAddr, rAddr string, buf []byte) *PFCPConn {
 	conn, err := reuse.Dial("udp", lAddr, rAddr)
 	if err != nil {
-		log.Errorln("dial socket failed", err)
+		log.Errorf("dial socket failed %v", err)
 	}
 
 	ts := recoveryTS{
@@ -120,7 +121,7 @@ func (node *PFCPNode) NewPFCPConn(lAddr, rAddr string, buf []byte) *PFCPConn {
 	}
 
 	// TODO: Get SEID range from PFCPNode for this PFCPConn
-	log.Infoln("Created PFCPConn from:", conn.LocalAddr(), "to:", conn.RemoteAddr())
+	log.Info("Created PFCPConn from: ", conn.LocalAddr(), "to: ", conn.RemoteAddr())
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
@@ -255,7 +256,7 @@ func (pConn *PFCPConn) Shutdown() {
 		return
 	}
 
-	log.Infoln("Shutdown complete for", rAddr)
+	log.Info("Shutdown complete for ", rAddr)
 }
 
 func (pConn *PFCPConn) getSeqNum() uint32 {
