@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	reuse "github.com/libp2p/go-reuseport"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/omec-project/upf-epc/pfcpiface/metrics"
 )
@@ -37,12 +37,12 @@ type PFCPNode struct {
 func NewPFCPNode(upf *Upf) *PFCPNode {
 	conn, err := reuse.ListenPacket("udp", ":"+PFCPPort)
 	if err != nil {
-		log.Fatalln("ListenUDP failed", err)
+		log.Fatal("ListenUDP failed ", err)
 	}
 
 	metrics, err := metrics.NewPrometheusService()
 	if err != nil {
-		log.Fatalln("prom metrics service init failed", err)
+		log.Fatal("prom metrics service init failed ", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -62,17 +62,18 @@ func (node *PFCPNode) tryConnectToN4Peers(lAddrStr string) {
 	for _, peer := range node.upf.peers {
 		conn, err := net.Dial("udp", peer+":"+PFCPPort)
 		if err != nil {
-			log.Warnln("Failed to establish PFCP connection to peer ", peer)
+			log.Warn("Failed to establish PFCP connection to peer ", peer)
 			continue
 		}
 
 		remoteAddr := conn.RemoteAddr().(*net.UDPAddr)
 		n4DstIP := remoteAddr.IP
 
-		log.WithFields(log.Fields{
-			"SPGWC/SMF host": peer,
-			"CP node":        n4DstIP.String(),
-		}).Info("Establishing PFCP Conn with CP node")
+		log.Infow(
+			"Establishing PFCP Conn with CP node",
+			zap.String("SPGWC/SMF host", peer),
+			zap.String("CP node", n4DstIP.String()),
+		)
 
 		pfcpConn := node.NewPFCPConn(lAddrStr, n4DstIP.String()+":"+PFCPPort, nil)
 		if pfcpConn != nil {
@@ -83,7 +84,7 @@ func (node *PFCPNode) tryConnectToN4Peers(lAddrStr string) {
 
 func (node *PFCPNode) handleNewPeers() {
 	lAddrStr := node.LocalAddr().String()
-	log.Infoln("listening for new PFCP connections on", lAddrStr)
+	log.Info("listening for new PFCP connections on ", lAddrStr)
 
 	node.tryConnectToN4Peers(lAddrStr)
 
@@ -103,7 +104,7 @@ func (node *PFCPNode) handleNewPeers() {
 
 		_, ok := node.pConns.Load(rAddrStr)
 		if ok {
-			log.Warnln("Drop packet for existing PFCPconn received from", rAddrStr)
+			log.Warn("Drop packet for existing PFCPconn received from ", rAddrStr)
 			continue
 		}
 
@@ -128,15 +129,15 @@ func (node *PFCPNode) Serve() {
 			})
 		case rAddr := <-node.pConnDone:
 			node.pConns.Delete(rAddr)
-			log.Infoln("Removed connection to", rAddr)
+			log.Info("Removed connection to ", rAddr)
 		case <-node.ctx.Done():
 			shutdown = true
 
-			log.Infoln("Shutting down PFCP node")
+			log.Info("Shutting down PFCP node")
 
 			err := node.Close()
 			if err != nil {
-				log.Errorln("Error closing PFCPNode conn", err)
+				log.Error("Error closing PFCPNode conn ", err)
 			}
 
 			// Clear out the remaining pconn completions
@@ -150,7 +151,7 @@ func (node *PFCPNode) Serve() {
 							break clearLoop
 						}
 						node.pConns.Delete(rAddr)
-						log.Infoln("Removed connection to", rAddr)
+						log.Info("Removed connection to ", rAddr)
 					}
 				default:
 					// nothing to read from channel
@@ -161,12 +162,12 @@ func (node *PFCPNode) Serve() {
 			if len(node.pConnDone) > 0 {
 				for rAddr := range node.pConnDone {
 					node.pConns.Delete(rAddr)
-					log.Infoln("Removed connection to", rAddr)
+					log.Info("Removed connection to ", rAddr)
 				}
 			}
 
 			close(node.pConnDone)
-			log.Infoln("Done waiting for PFCPConn completions")
+			log.Info("Done waiting for PFCPConn completions")
 
 			node.upf.Exit()
 		}
@@ -180,12 +181,12 @@ func (node *PFCPNode) Stop() {
 
 	if err := node.metrics.Stop(); err != nil {
 		// TODO: propagate error upwards
-		log.Errorln(err)
+		log.Error(err)
 	}
 }
 
 // Done waits for Shutdown() to complete
 func (node *PFCPNode) Done() {
 	<-node.done
-	log.Infoln("Shutdown complete")
+	log.Info("Shutdown complete")
 }

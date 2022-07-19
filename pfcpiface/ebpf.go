@@ -6,8 +6,6 @@ package pfcpiface
 import (
 	"net"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/wmnsk/go-pfcp/ie"
 
@@ -15,7 +13,7 @@ import (
 )
 
 type Ebpf struct {
-	conn             *grpc.ClientConn
+	conn *grpc.ClientConn
 }
 
 func (d *Ebpf) IsConnected(accessIP *net.IP) bool {
@@ -25,12 +23,12 @@ func (d *Ebpf) IsConnected(accessIP *net.IP) bool {
 }
 
 func (d *Ebpf) Exit() {
-	log.Println("Shutting down datapath...")
+	log.Info("Shutting down datapath...")
 }
 
 // SetUpfInfo is only called at pfcp-agent's startup
 func (d *Ebpf) SetUpfInfo(u *Upf, conf *Conf) {
-	log.Println("Setting UPF config...")
+	log.Info("Setting UPF config...")
 }
 
 func (d *Ebpf) SendMsgToUPF(
@@ -48,15 +46,15 @@ func (d *Ebpf) SendMsgToUPF(
 	}
 
 	for _, pdr := range pdrs {
-		log.Traceln(method, pdr)
+		log.Debugf("%s %s", method, pdr)
 	}
 
 	for _, far := range fars {
-		log.Traceln(method, far)
+		log.Debugf("%s %s", method, far)
 	}
 
 	for _, qer := range qers {
-		log.Traceln(method, qer)
+		log.Debugf("%s %s", method, qer)
 	}
 
 	return cause

@@ -6,7 +6,7 @@ package pfcpiface
 import (
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type InMemoryStore struct {
@@ -29,9 +29,10 @@ func (i *InMemoryStore) GetAllSessions() []PFCPSession {
 		return true
 	})
 
-	log.WithFields(log.Fields{
-		"sessions": sessions,
-	}).Trace("Got all PFCP sessions from local store")
+	log.Debugw(
+		"Got all PFCP sessions from local store",
+		zap.Any("sessions", sessions),
+	)
 
 	return sessions
 }
@@ -43,9 +44,10 @@ func (i *InMemoryStore) PutSession(session PFCPSession) error {
 
 	i.sessions.Store(session.localSEID, session)
 
-	log.WithFields(log.Fields{
-		"session": session,
-	}).Trace("Saved PFCP sessions to local store")
+	log.Debugw(
+		"Saved PFCP sessions to local store",
+		zap.Any("session", session),
+	)
 
 	return nil
 }
@@ -53,9 +55,10 @@ func (i *InMemoryStore) PutSession(session PFCPSession) error {
 func (i *InMemoryStore) DeleteSession(fseid uint64) error {
 	i.sessions.Delete(fseid)
 
-	log.WithFields(log.Fields{
-		"F-SEID": fseid,
-	}).Trace("PFCP session removed from local store")
+	log.Debugw(
+		"PFCP session removed from local store",
+		zap.Uint64("F-SEID", fseid),
+	)
 
 	return nil
 }
@@ -66,7 +69,7 @@ func (i *InMemoryStore) DeleteAllSessions() bool {
 		return true
 	})
 
-	log.Trace("All PFCP sessions removed from local store")
+	log.Debug("All PFCP sessions removed from local store")
 
 	return true
 }
@@ -82,9 +85,10 @@ func (i *InMemoryStore) GetSession(fseid uint64) (PFCPSession, bool) {
 		return PFCPSession{}, false
 	}
 
-	log.WithFields(log.Fields{
-		"session": session,
-	}).Trace("Got PFCP session from local store")
+	log.Debugw(
+		"Got PFCP session from local store",
+		zap.Any("session", session),
+	)
 
 	return session, ok
 }

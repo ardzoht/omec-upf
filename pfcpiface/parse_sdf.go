@@ -10,8 +10,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -96,10 +94,10 @@ func (ipf *ipFilterRule) String() string {
 }
 
 func parseFlowDesc(flowDesc, ueIP string) (*ipFilterRule, error) {
-	parseLog := log.WithFields(log.Fields{
-		"flow-description": flowDesc,
-		"ue-address":       ueIP,
-	})
+	parseLog := log.With(
+		"flow-description", flowDesc,
+		"ue-address", ueIP,
+	)
 	parseLog.Debug("Parsing flow description")
 
 	ipf := newIpFilterRule()
@@ -181,7 +179,7 @@ func parseFlowDesc(flowDesc, ueIP string) (*ipFilterRule, error) {
 		}
 	}
 
-	parseLog = parseLog.WithField("ip-filter", ipf)
+	parseLog = parseLog.With("ip-filter", ipf)
 	parseLog.Debug("Flow description parsed successfully")
 
 	return ipf, nil

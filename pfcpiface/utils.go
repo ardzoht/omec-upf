@@ -9,8 +9,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Bits type.

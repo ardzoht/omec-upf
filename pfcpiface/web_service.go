@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -51,7 +49,7 @@ func setupConfigHandler(mux *http.ServeMux, upf *Upf) {
 }
 
 func (c *ConfigHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Infoln("handle http request for /v1/config/network-slices")
+	log.Info("handle http request for /v1/config/network-slices")
 
 	switch r.Method {
 	case "PUT":
@@ -59,24 +57,24 @@ func (c *ConfigHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Errorln("http req read body failed.")
+			log.Error("http req read body failed.")
 			sendHTTPResp(http.StatusBadRequest, w)
 		}
 
-		log.Traceln(string(body))
+		log.Debug(string(body))
 
 		var nwSlice NetworkSlice
 
 		err = json.Unmarshal(body, &nwSlice)
 		if err != nil {
-			log.Errorln("Json unmarshal failed for http request")
+			log.Error("Json unmarshal failed for http request")
 			sendHTTPResp(http.StatusBadRequest, w)
 		}
 
 		handleSliceConfig(&nwSlice, c.upf)
 		sendHTTPResp(http.StatusCreated, w)
 	default:
-		log.Infoln(w, "Sorry, only PUT and POST methods are supported.")
+		log.Info(w, " Sorry, only PUT and POST methods are supported.")
 		sendHTTPResp(http.StatusMethodNotAllowed, w)
 	}
 }
@@ -96,12 +94,12 @@ func sendHTTPResp(status int, w http.ResponseWriter) {
 
 	jsonResp, err := json.Marshal(resp)
 	if err != nil {
-		log.Errorln("Error happened in JSON marshal. Err: ", err)
+		log.Error("Error happened in JSON marshal. Err: ", err)
 	}
 
 	_, err = w.Write(jsonResp)
 	if err != nil {
-		log.Errorln("http response write failed : ", err)
+		log.Error("http response write failed : ", err)
 	}
 }
 
@@ -130,7 +128,7 @@ func calculateBitRates(mbr uint64, rate string) uint64 {
 }
 
 func handleSliceConfig(nwSlice *NetworkSlice, upf *Upf) {
-	log.Infoln("handle slice config : ", nwSlice.SliceName)
+	log.Info("handle slice config : ", nwSlice.SliceName)
 
 	ulMbr := calculateBitRates(nwSlice.SliceQos.UplinkMbr,
 		nwSlice.SliceQos.BitrateUnit)
@@ -157,6 +155,6 @@ func handleSliceConfig(nwSlice *NetworkSlice, upf *Upf) {
 
 	err := upf.addSliceInfo(&sliceInfo)
 	if err != nil {
-		log.Errorln("adding slice info to datapath failed : ", err)
+		log.Error("adding slice info to datapath failed : ", err)
 	}
 }

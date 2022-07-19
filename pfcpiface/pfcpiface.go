@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -71,7 +69,7 @@ func (p *PFCPIface) mustInit() {
 	p.uc, p.nc, err = setupProm(httpMux, p.Upf, p.node)
 
 	if err != nil {
-		log.Fatalln("setupProm failed", err)
+		log.Fatal("setupProm failed ", err)
 	}
 
 	p.httpSrv = &http.Server{Addr: p.httpEndpoint, Handler: httpMux}
@@ -90,10 +88,10 @@ func (p *PFCPIface) Run() {
 
 	go func() {
 		if err := p.httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalln("http server failed", err)
+			log.Fatal("http server failed ", err)
 		}
 
-		log.Infoln("http server closed")
+		log.Info("http server closed")
 	}()
 
 	// blocking
@@ -111,7 +109,7 @@ func (p *PFCPIface) Stop() {
 	}()
 
 	if err := p.httpSrv.Shutdown(ctxHttpShutdown); err != nil {
-		log.Errorln("Failed to shutdown http: ", err)
+		log.Error("Failed to shutdown http: ", err)
 	}
 
 	p.node.Stop()

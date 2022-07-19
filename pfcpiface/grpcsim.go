@@ -6,7 +6,6 @@ package pfcpiface
 import (
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/wmnsk/go-pfcp/ie"
 )
 
@@ -69,7 +68,7 @@ func (s simMode) enable() bool {
 }
 
 func (u *Upf) sim(mode simMode, s *SimModeInfo) {
-	log.Infoln(simulate.String(), "sessions:", s.MaxSessions)
+	log.Infof("%s sessions: %v", simulate.String(), s.MaxSessions)
 
 	start := time.Now()
 	ueip := s.StartUEIP
@@ -264,9 +263,9 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		} else if mode.delete() {
 			u.SendMsgToUPF(UpfMsgTypeDel, allRules, PacketForwardingRules{})
 		} else {
-			log.Fatalln("Unsupported method", mode)
+			log.Fatalf("Unsupported method %v", mode)
 		}
 	}
 
-	log.Infoln("Sessions/s:", float64(s.MaxSessions)/time.Since(start).Seconds())
+	log.Infof("Sessions/s: %v", float64(s.MaxSessions)/time.Since(start).Seconds())
 }

@@ -8,10 +8,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func mustWriteStringToDisk(s string, path string) {
@@ -78,7 +77,7 @@ func TestLoadConfigFile(t *testing.T) {
 
 		conf, err := LoadConfigFile(confPath)
 		require.NoError(t, err)
-		require.Equal(t, conf.LogLevel, log.InfoLevel)
+		require.Equal(t, conf.LogLevel, zap.InfoLevel)
 	})
 
 	t.Run("all sample configs must be valid", func(t *testing.T) {

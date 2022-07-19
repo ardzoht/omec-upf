@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Showmax/go-fqdn"
-	log "github.com/sirupsen/logrus"
 )
 
 // QosConfigVal : Qos configured value.
@@ -98,7 +97,7 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 	if conf.CPIface.UseFQDN && nodeID == "" {
 		nodeID, err = fqdn.FqdnHostname()
 		if err != nil {
-			log.Fatalln("Unable to get hostname", err)
+			log.Fatal("Unable to get hostname", err)
 		}
 	}
 
@@ -106,7 +105,7 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 	if nodeID != "" {
 		hosts, err := net.LookupHost(nodeID)
 		if err != nil {
-			log.Fatalln("Unable to resolve hostname", nodeID, err)
+			log.Fatalf("Unable to resolve hostname %v %v", nodeID, err)
 		}
 
 		nodeID = hosts[0]
@@ -134,34 +133,34 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 		nc := copy(u.peers, conf.CPIface.Peers)
 
 		if nc == 0 {
-			log.Warnln("Failed to parse cpiface peers, PFCP Agent will not initiate connection to N4 peers.")
+			log.Warn("Failed to parse cpiface peers, PFCP Agent will not initiate connection to N4 peers.")
 		}
 	}
 
 	if !conf.EnableP4rt {
 		u.AccessIP, err = GetUnicastAddressFromInterface(conf.AccessIface.IfName)
 		if err != nil {
-			log.Errorln(err)
+			log.Error(err)
 			return nil
 		}
 
 		u.CoreIP, err = GetUnicastAddressFromInterface(conf.CoreIface.IfName)
 		if err != nil {
-			log.Errorln(err)
+			log.Error(err)
 			return nil
 		}
 	}
 
 	u.respTimeout, err = time.ParseDuration(conf.RespTimeout)
 	if err != nil {
-		log.Fatalln("Unable to parse resp_timeout")
+		log.Fatal("Unable to parse resp_timeout")
 	}
 
 	if u.enableHBTimer {
 		if conf.HeartBeatInterval != "" {
 			u.hbInterval, err = time.ParseDuration(conf.HeartBeatInterval)
 			if err != nil {
-				log.Fatalln("Unable to parse heart_beat_interval")
+				log.Fatal("Unable to parse heart_beat_interval")
 			}
 		}
 	}
@@ -169,7 +168,7 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 	if u.enableUeIPAlloc {
 		u.ippool, err = NewIPPool(u.ippoolCidr)
 		if err != nil {
-			log.Fatalln("ip pool init failed", err)
+			log.Fatal("ip pool init failed", err)
 		}
 	}
 
