@@ -32,7 +32,7 @@ func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
 
 func addEndMarker(farItem far, endMarkerList *[][]byte) {
 	// This time lets fill out some information
-	log.Info("Adding end Marker for farID : ", farItem.farID)
+	log.Info("Adding end Marker for farID : ", farItem.FarID)
 
 	options := gopacket.SerializeOptions{
 		ComputeChecksums: true,
