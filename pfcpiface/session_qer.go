@@ -65,7 +65,7 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 	sessQerIDList := make([]uint32, 0)
 	lastPdrIndex := len(s.Pdrs) - 1
 	// create search list with first pdr's qerlist */
-	sessQerIDList = append(sessQerIDList, s.Pdrs[lastPdrIndex].qerIDList...)
+	sessQerIDList = append(sessQerIDList, s.Pdrs[lastPdrIndex].QerIDList...)
 
 	// If PDRs have no QERs, then no marking for session qers is needed.
 	// If PDRS have one QER and all PDRs point to same QER, then consider it as application qer.
@@ -78,7 +78,7 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 	// loop around all pdrs and find matching qers.
 	for i := range s.Pdrs {
 		// match every qer in searchlist in pdr's qer list
-		sList := Intersect(sessQerIDList, s.Pdrs[i].qerIDList)
+		sList := Intersect(sessQerIDList, s.Pdrs[i].QerIDList)
 		if len(sList) == 0 {
 			return
 		}
@@ -125,10 +125,10 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 
 	for i := range s.Pdrs {
 		// remove common qerID from pdr's qer list
-		idx := findItemIndex(s.Pdrs[i].qerIDList, sessQerID)
-		if idx != len(s.Pdrs[i].qerIDList) {
-			s.Pdrs[i].qerIDList = append(s.Pdrs[i].qerIDList[:idx], s.Pdrs[i].qerIDList[idx+1:]...)
-			s.Pdrs[i].qerIDList = append(s.Pdrs[i].qerIDList, sessQerID)
+		idx := findItemIndex(s.Pdrs[i].QerIDList, sessQerID)
+		if idx != len(s.Pdrs[i].QerIDList) {
+			s.Pdrs[i].QerIDList = append(s.Pdrs[i].QerIDList[:idx], s.Pdrs[i].QerIDList[idx+1:]...)
+			s.Pdrs[i].QerIDList = append(s.Pdrs[i].QerIDList, sessQerID)
 		}
 	}
 }

@@ -11,8 +11,8 @@ import (
 )
 
 type EndMarker struct {
-	TEID     uint32
-	PeerIP   net.IP
+	TEID uint32
+	PeerIP net.IP
 	PeerPort uint16
 }
 
@@ -23,9 +23,9 @@ func (s *PFCPSession) CreateFAR(f far) {
 
 func addEndMarkerForGtp(farItem far, endMarkerList *[]EndMarker) {
 	newEndMarker := EndMarker{
-		TEID:     farItem.tunnelTEID,
-		PeerIP:   int2ip(farItem.tunnelIP4Dst),
-		PeerPort: farItem.tunnelPort,
+		TEID: farItem.TunnelTEID,
+		PeerIP: int2ip(farItem.TunnelIP4Dst),
+		PeerPort: farItem.TunnelPort,
 	}
 	*endMarkerList = append(*endMarkerList, newEndMarker)
 }
@@ -42,8 +42,8 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 	ipLayer := &layers.IPv4{
 		Version:  4,
 		TTL:      64,
-		SrcIP:    int2ip(farItem.tunnelIP4Src),
-		DstIP:    int2ip(farItem.tunnelIP4Dst),
+		SrcIP:    int2ip(farItem.TunnelIP4Src),
+		DstIP:    int2ip(farItem.TunnelIP4Dst),
 		Protocol: layers.IPProtocolUDP,
 	}
 	ethernetLayer := &layers.Ethernet{
@@ -65,8 +65,8 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 	gtpLayer := &layers.GTPv1U{
 		Version:      1,
 		MessageType:  254,
-		ProtocolType: farItem.tunnelType,
-		TEID:         farItem.tunnelTEID,
+		ProtocolType: farItem.TunnelType,
+		TEID:         farItem.TunnelTEID,
 	}
 	// And create the packet with the layers
 	err = gopacket.SerializeLayers(buffer, options,
@@ -87,8 +87,8 @@ func addEndMarker(farItem far, endMarkerList *[][]byte) {
 // UpdateFAR updates existing far in the session.
 func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[]EndMarker) error {
 	for idx, v := range s.Fars {
-		if v.farID == f.farID {
-			if f.sendEndMarker {
+		if v.FarID == f.FarID {
+			if f.SendEndMarker {
 				addEndMarkerForGtp(v, endMarkerList)
 			}
 
@@ -104,7 +104,7 @@ func (s *PFCPSession) UpdateFAR(f *far, endMarkerList *[]EndMarker) error {
 // RemoveFAR removes far from existing list of FARs in the session.
 func (s *PFCPSession) RemoveFAR(id uint32) (*far, error) {
 	for idx, v := range s.Fars {
-		if v.farID == id {
+		if v.FarID == id {
 			s.Fars = append(s.Fars[:idx], s.Fars[idx+1:]...)
 			return &v, nil
 		}

@@ -18,4 +18,4 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-retract [v0.3.0, v0.6.5] // These versions are deprecated
+retract [v0.3.0, v0.6.9] // These versions are deprecated
