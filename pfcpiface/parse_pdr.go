@@ -268,7 +268,7 @@ type applicationFilter struct {
 	ProtoMask uint8
 }
 
-type pdr struct {
+type Pdr struct {
 	SrcIface     uint8
 	TunnelIP4Dst uint32
 	TunnelTEID   uint32
@@ -305,7 +305,7 @@ func (af applicationFilter) String() string {
 		af.ProtoMask, af.SrcPortRange, af.DstPortRange)
 }
 
-func (p pdr) String() string {
+func (p Pdr) String() string {
 	return fmt.Sprintf("PDR(id=%v, F-SEID=%v, srcIface=%v, tunnelIPv4Dst=%v/%x, "+
 		"tunnelTEID=%v/%x, ueAddress=%v, applicationFilter=%v, precedence=%v, F-SEID IP=%v, "+
 		"counterID=%v, farID=%v, qerIDs=%v, needDecap=%v, allocIPFlag=%v)",
@@ -314,21 +314,21 @@ func (p pdr) String() string {
 		p.FseidIP, p.CtrID, p.FarID, p.QerIDList, p.NeedDecap, p.AllocIPFlag)
 }
 
-func (p pdr) IsAppFilterEmpty() bool {
+func (p Pdr) IsAppFilterEmpty() bool {
 	return p.AppFilter.Proto == 0 &&
 		((p.IsUplink() && p.AppFilter.DstIP == 0 && p.AppFilter.DstPortRange.isWildcardMatch()) ||
 			(p.IsDownlink() && p.AppFilter.SrcIP == 0 && p.AppFilter.SrcPortRange.isWildcardMatch()))
 }
 
-func (p pdr) IsUplink() bool {
+func (p Pdr) IsUplink() bool {
 	return p.SrcIface == access
 }
 
-func (p pdr) IsDownlink() bool {
+func (p Pdr) IsDownlink() bool {
 	return p.SrcIface == core
 }
 
-func (p *pdr) parseUEAddressIE(ueAddrIE *ie.IE, ippool *IPPool) error {
+func (p *Pdr) parseUEAddressIE(ueAddrIE *ie.IE, ippool *IPPool) error {
 	var ueIP4 net.IP
 
 	ueIPaddr, err := ueAddrIE.UEIPAddress()
@@ -364,7 +364,7 @@ func (p *pdr) parseUEAddressIE(ueAddrIE *ie.IE, ippool *IPPool) error {
 	return nil
 }
 
-func (p *pdr) parseSourceInterfaceIE(srcIfaceIE *ie.IE) error {
+func (p *Pdr) parseSourceInterfaceIE(srcIfaceIE *ie.IE) error {
 	srcIface, err := srcIfaceIE.SourceInterface()
 	if err != nil {
 		return err
@@ -383,7 +383,7 @@ func (p *pdr) parseSourceInterfaceIE(srcIfaceIE *ie.IE) error {
 	return nil
 }
 
-func (p *pdr) parseFTEID(teidIE *ie.IE) error {
+func (p *Pdr) parseFTEID(teidIE *ie.IE) error {
 	fteid, err := teidIE.FTEID()
 	if err != nil {
 		return err
@@ -402,7 +402,7 @@ func (p *pdr) parseFTEID(teidIE *ie.IE) error {
 	return nil
 }
 
-func (p *pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
+func (p *Pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 	appID, err := ie.ApplicationID()
 	if err != nil {
 		return err
@@ -456,7 +456,7 @@ func (p *pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 	return nil
 }
 
-func (p *pdr) parseSDFFilter(ie *ie.IE) error {
+func (p *Pdr) parseSDFFilter(ie *ie.IE) error {
 	sdfFields, err := ie.SDFFilter()
 	if err != nil {
 		return err
@@ -516,7 +516,7 @@ func (p *pdr) parseSDFFilter(ie *ie.IE) error {
 	return nil
 }
 
-func (p *pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPool) error {
+func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPool) error {
 	for _, pdiIE := range pdiIEs {
 		switch pdiIE.Type {
 		case ie.UEIPAddress:
@@ -566,7 +566,7 @@ func (p *pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPoo
 	return nil
 }
 
-func (p *pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippool *IPPool) error {
+func (p *Pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippool *IPPool) error {
 	/* reset outerHeaderRemoval to begin with */
 	outerHeaderRemoval := uint8(0)
 	p.QerIDList = make([]uint32, 0)

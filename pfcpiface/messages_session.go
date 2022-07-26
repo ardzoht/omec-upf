@@ -82,12 +82,12 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 			ie.CauseNoResourcesAvailable)
 	}
 
-	addPDRs := make([]pdr, 0, MaxItems)
-	addFARs := make([]far, 0, MaxItems)
+	addPDRs := make([]Pdr, 0, MaxItems)
+	addFARs := make([]Far, 0, MaxItems)
 	addQERs := make([]qer, 0, MaxItems)
 
 	for _, cPDR := range sereq.CreatePDR {
-		var p pdr
+		var p Pdr
 		if err := p.parsePDR(cPDR, session.localSEID, pConn.appPFDs, upf.ippool); err != nil {
 			return errProcessReply(err, ie.CauseRequestRejected)
 		}
@@ -98,7 +98,7 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 	}
 
 	for _, cFAR := range sereq.CreateFAR {
-		var f far
+		var f Far
 		if err := f.parseFAR(cFAR, session.localSEID, upf, create); err != nil {
 			return errProcessReply(err, ie.CauseRequestRejected)
 		}
@@ -215,13 +215,13 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	remoteSEID = session.remoteSEID
 
-	addPDRs := make([]pdr, 0, MaxItems)
-	addFARs := make([]far, 0, MaxItems)
+	addPDRs := make([]Pdr, 0, MaxItems)
+	addFARs := make([]Far, 0, MaxItems)
 	addQERs := make([]qer, 0, MaxItems)
 	endMarkerList := make([]EndMarker, 0, MaxItems)
 
 	for _, cPDR := range smreq.CreatePDR {
-		var p pdr
+		var p Pdr
 		if err := p.parsePDR(cPDR, localSEID, pConn.appPFDs, upf.ippool); err != nil {
 			return sendError(err)
 		}
@@ -233,7 +233,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	}
 
 	for _, cFAR := range smreq.CreateFAR {
-		var f far
+		var f Far
 		if err := f.parseFAR(cFAR, localSEID, upf, create); err != nil {
 			return sendError(err)
 		}
@@ -258,7 +258,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	for _, uPDR := range smreq.UpdatePDR {
 		var (
-			p   pdr
+			p   Pdr
 			err error
 		)
 
@@ -279,7 +279,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	for _, uFAR := range smreq.UpdateFAR {
 		var (
-			f   far
+			f   Far
 			err error
 		)
 
@@ -343,8 +343,8 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		}
 	}
 
-	delPDRs := make([]pdr, 0, MaxItems)
-	delFARs := make([]far, 0, MaxItems)
+	delPDRs := make([]Pdr, 0, MaxItems)
+	delFARs := make([]Far, 0, MaxItems)
 	delQERs := make([]qer, 0, MaxItems)
 
 	for _, rPDR := range smreq.RemovePDR {

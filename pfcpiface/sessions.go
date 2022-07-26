@@ -10,8 +10,8 @@ import (
 )
 
 type PacketForwardingRules struct {
-	Pdrs []pdr
-	Fars []far
+	Pdrs []Pdr
+	Fars []Far
 	Qers []qer
 }
 
@@ -40,8 +40,8 @@ func (pConn *PFCPConn) NewPFCPSession(rseid uint64) (PFCPSession, bool) {
 			localSEID:  lseid,
 			remoteSEID: rseid,
 			PacketForwardingRules: PacketForwardingRules{
-				Pdrs: make([]pdr, 0, MaxItems),
-				Fars: make([]far, 0, MaxItems),
+				Pdrs: make([]Pdr, 0, MaxItems),
+				Fars: make([]Far, 0, MaxItems),
 				Qers: make([]qer, 0, MaxItems),
 			},
 		}

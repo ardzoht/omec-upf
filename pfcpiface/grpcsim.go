@@ -90,7 +90,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		enbIdx := ran*ng4tMaxEnbRan + enbOfRan
 
 		// create/delete downlink pdr
-		pdrN6Down := pdr{
+		pdrN6Down := Pdr{
 			SrcIface: core,
 			AppFilter: applicationFilter{
 				DstIP:     ip2int(ueip) + i,
@@ -109,7 +109,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			NeedDecap: 0,
 		}
 
-		pdrN9Down := pdr{
+		pdrN9Down := Pdr{
 			SrcIface:     core,
 			TunnelTEID:   n9TEID + i,
 			TunnelIP4Dst: ip2int(u.CoreIP),
@@ -129,7 +129,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		}
 
 		// create/delete uplink pdr
-		pdrN6Up := pdr{
+		pdrN6Up := Pdr{
 			SrcIface:     access,
 			TunnelIP4Dst: ip2int(u.AccessIP),
 			TunnelTEID:   n3TEID + i,
@@ -152,7 +152,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			NeedDecap: 1,
 		}
 
-		pdrN9Up := pdr{
+		pdrN9Up := Pdr{
 			SrcIface:     access,
 			TunnelIP4Dst: ip2int(u.AccessIP),
 			TunnelTEID:   n3TEID + i,
@@ -175,10 +175,10 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			NeedDecap: 1,
 		}
 
-		pdrs := []pdr{pdrN6Down, pdrN9Down, pdrN6Up, pdrN9Up}
+		pdrs := []Pdr{pdrN6Down, pdrN9Down, pdrN6Up, pdrN9Up}
 
 		// create/delete downlink far
-		farDown := far{
+		farDown := Far{
 			FarID: n3,
 			FseID: uint64(n3TEID + i),
 
@@ -192,7 +192,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		}
 
 		// create/delete uplink far
-		farN6Up := far{
+		farN6Up := Far{
 			FarID: n6,
 			FseID: uint64(n3TEID + i),
 
@@ -200,7 +200,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			DstIntf:     ie.DstInterfaceCore,
 		}
 
-		farN9Up := far{
+		farN9Up := Far{
 			FarID: n9,
 			FseID: uint64(n3TEID + i),
 
@@ -213,7 +213,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			TunnelPort:   tunnelGTPUPort,
 		}
 
-		fars := []far{farDown, farN6Up, farN9Up}
+		fars := []Far{farDown, farN6Up, farN9Up}
 
 		// create/delete uplink qer
 		qerN6 := qer{

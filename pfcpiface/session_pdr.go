@@ -52,12 +52,12 @@ func addPdrInfo(msg *message.SessionEstablishmentResponse,
 }
 
 // CreatePDR appends pdr to existing list of PDRs in the session.
-func (s *PFCPSession) CreatePDR(p pdr) {
+func (s *PFCPSession) CreatePDR(p Pdr) {
 	s.Pdrs = append(s.Pdrs, p)
 }
 
 // UpdatePDR updates existing pdr in the session.
-func (s *PFCPSession) UpdatePDR(p pdr) error {
+func (s *PFCPSession) UpdatePDR(p Pdr) error {
 	for idx, v := range s.Pdrs {
 		if v.PdrID == p.PdrID {
 			s.Pdrs[idx] = p
@@ -69,7 +69,7 @@ func (s *PFCPSession) UpdatePDR(p pdr) error {
 }
 
 // RemovePDR removes pdr from existing list of PDRs in the session.
-func (s *PFCPSession) RemovePDR(id uint32) (*pdr, error) {
+func (s *PFCPSession) RemovePDR(id uint32) (*Pdr, error) {
 	for idx, v := range s.Pdrs {
 		if v.PdrID == id {
 			s.Pdrs = append(s.Pdrs[:idx], s.Pdrs[idx+1:]...)

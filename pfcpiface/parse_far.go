@@ -29,7 +29,7 @@ const (
 	update
 )
 
-type far struct {
+type Far struct {
 	FarID   uint32
 	FseID   uint64
 	FseidIP uint32
@@ -44,7 +44,7 @@ type far struct {
 	TunnelPort    uint16
 }
 
-func (f far) String() string {
+func (f Far) String() string {
 	return fmt.Sprintf("FAR(id=%v, F-SEID=%v, F-SEID IPv4=%v, dstInterface=%v, tunnelType=%v, "+
 		"tunnelIPv4Src=%v, tunnelIPv4Dst=%v, tunnelTEID=%v, tunnelSrcPort=%v, "+
 		"sendEndMarker=%v, drops=%v, forwards=%v, buffers=%v)", f.FarID, f.FseID, int2ip(f.FseidIP), f.DstIntf,
@@ -52,19 +52,19 @@ func (f far) String() string {
 		f.Drops(), f.Forwards(), f.Buffers())
 }
 
-func (f *far) Drops() bool {
+func (f *Far) Drops() bool {
 	return f.ApplyAction&ActionDrop != 0
 }
 
-func (f *far) Buffers() bool {
+func (f *Far) Buffers() bool {
 	return f.ApplyAction&ActionBuffer != 0
 }
 
-func (f *far) Forwards() bool {
+func (f *Far) Forwards() bool {
 	return f.ApplyAction&ActionForward != 0
 }
 
-func (f *far) parseFAR(farIE *ie.IE, fseid uint64, upf *Upf, op operation) error {
+func (f *Far) parseFAR(farIE *ie.IE, fseid uint64, upf *Upf, op operation) error {
 	f.FseID = (fseid)
 
 	farID, err := farIE.FARID()
