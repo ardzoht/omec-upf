@@ -53,11 +53,19 @@ func addPdrInfo(msg *message.SessionEstablishmentResponse,
 
 // CreatePDR appends pdr to existing list of PDRs in the session.
 func (s *PFCPSession) CreatePDR(p Pdr) {
+	if p.IsDownlink() && p.UeAddress != 0 {
+		s.UeAddress = p.UeAddress
+	}
+
 	s.Pdrs = append(s.Pdrs, p)
 }
 
 // UpdatePDR updates existing pdr in the session.
 func (s *PFCPSession) UpdatePDR(p Pdr) error {
+	if p.IsDownlink() && p.UeAddress != 0 {
+		s.UeAddress = p.UeAddress
+	}
+
 	for idx, v := range s.Pdrs {
 		if v.PdrID == p.PdrID {
 			s.Pdrs[idx] = p

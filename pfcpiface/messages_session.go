@@ -95,10 +95,6 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 		p.FseidIP = fseidIP
 		session.CreatePDR(p)
 		addPDRs = append(addPDRs, p)
-
-		if p.IsDownlink() {
-			session.UeAddress = p.UeAddress
-		}
 	}
 
 	for _, cFAR := range sereq.CreateFAR {
@@ -234,10 +230,6 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 		session.CreatePDR(p)
 		addPDRs = append(addPDRs, p)
-
-		if p.IsDownlink() {
-			session.UeAddress = p.UeAddress
-		}
 	}
 
 	for _, cFAR := range smreq.CreateFAR {
@@ -367,10 +359,6 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		}
 
 		delPDRs = append(delPDRs, *p)
-
-		if p.IsDownlink() {
-			session.UeAddress = p.UeAddress
-		}
 	}
 
 	for _, dFAR := range smreq.RemoveFAR {
