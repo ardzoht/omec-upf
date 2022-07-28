@@ -243,7 +243,7 @@ func (pConn *PFCPConn) Shutdown() {
 
 	// Cleanup all sessions in this conn
 	for _, sess := range pConn.store.GetAllSessions() {
-		pConn.upf.SendMsgToUPF(UpfMsgTypeDel, sess.PacketForwardingRules, PacketForwardingRules{})
+		pConn.upf.SendMsgToUPF(UpfMsgTypeDel, sess, PacketForwardingRules{})
 		pConn.RemoveSession(sess)
 	}
 

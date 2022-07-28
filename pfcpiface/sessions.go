@@ -21,6 +21,9 @@ type PFCPSession struct {
 	remoteSEID uint64
 	metrics    *metrics.Session
 	PacketForwardingRules
+	// used to store session <-> UE Address mapping
+	// which is needed to efficiently find UE address for UL PDRs in the PFCP messages.
+	UeAddress uint32
 }
 
 func (p PacketForwardingRules) String() string {

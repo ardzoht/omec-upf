@@ -32,12 +32,12 @@ func (d *Ebpf) SetUpfInfo(u *Upf, conf *Conf) {
 }
 
 func (d *Ebpf) SendMsgToUPF(
-	method UpfMsgType, rules PacketForwardingRules, updated PacketForwardingRules) uint8 {
+	method UpfMsgType, session PFCPSession, updated PacketForwardingRules) uint8 {
 	var cause uint8 = ie.CauseRequestAccepted
 
-	pdrs := rules.Pdrs
-	fars := rules.Fars
-	qers := rules.Qers
+	pdrs := session.Pdrs
+	fars := session.Fars
+	qers := session.Qers
 
 	if method == UpfMsgTypeMod {
 		pdrs = updated.Pdrs
