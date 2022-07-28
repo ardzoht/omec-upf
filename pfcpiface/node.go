@@ -120,7 +120,7 @@ func (node *PFCPNode) Serve() {
 
 	for !shutdown {
 		select {
-		case fseid := <-node.upf.reportNotifyChan:
+		case fseid := <-node.upf.ReportNotifyChan:
 			// TODO: Logic to distinguish PFCPConn based on SEID
 			node.pConns.Range(func(key, value interface{}) bool {
 				pConn := value.(*PFCPConn)
