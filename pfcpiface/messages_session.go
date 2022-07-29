@@ -445,7 +445,7 @@ func (pConn *PFCPConn) handleSessionDeletionRequest(msg message.Message) (messag
 		return sendError(ErrNotFoundWithParam("PFCP session", "localSEID", localSEID))
 	}
 
-	cause := upf.SendMsgToUPF(UpfMsgTypeDel, session, PacketForwardingRules{})
+	cause := upf.SendMsgToUPF(UpfMsgTypeDel, session, session.PacketForwardingRules)
 	if cause == ie.CauseRequestRejected {
 		return sendError(ErrWriteToDatapath)
 	}
