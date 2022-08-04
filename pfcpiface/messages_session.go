@@ -218,7 +218,6 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	addPDRs := make([]Pdr, 0, MaxItems)
 	addFARs := make([]Far, 0, MaxItems)
 	addQERs := make([]qer, 0, MaxItems)
-	endMarkerList := make([]EndMarker, 0, MaxItems)
 
 	for _, cPDR := range smreq.CreatePDR {
 		var p Pdr
@@ -256,6 +255,33 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		addQERs = append(addQERs, q)
 	}
 
+	updated := PacketForwardingRules{
+		Pdrs: addPDRs,
+		Fars: addFARs,
+		Qers: addQERs,
+	}
+
+	cause := upf.SendMsgToUPF(UpfMsgTypeAdd, session, updated)
+	if cause == ie.CauseRequestRejected {
+		return sendError(ErrWriteToDatapath)
+	}
+
+	updatePDRs := make([]Pdr, 0, MaxItems)
+	updateFARs := make([]Far, 0, MaxItems)
+	updateQERs := make([]qer, 0, MaxItems)
+	endMarkerList := make([]EndMarker, 0, MaxItems)
+
+	// maintain a copy of session before updating for session modification
+	// datapath could leverage the previous session info to update forwarding rules
+	oldSession := PFCPSession{
+		UeAddress:  session.UeAddress,
+		localSEID:  session.localSEID,
+		remoteSEID: session.remoteSEID,
+	}
+	copy(oldSession.Pdrs, session.Pdrs)
+	copy(oldSession.Fars, session.Fars)
+	copy(oldSession.Qers, session.Qers)
+
 	for _, uPDR := range smreq.UpdatePDR {
 		var (
 			p   Pdr
@@ -274,7 +300,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 			continue
 		}
 
-		addPDRs = append(addPDRs, p)
+		updatePDRs = append(updatePDRs, p)
 	}
 
 	for _, uFAR := range smreq.UpdateFAR {
@@ -295,7 +321,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 			continue
 		}
 
-		addFARs = append(addFARs, f)
+		updateFARs = append(updateFARs, f)
 	}
 
 	for _, uQER := range smreq.UpdateQER {
@@ -316,7 +342,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 			continue
 		}
 
-		addQERs = append(addQERs, q)
+		updateQERs = append(updateQERs, q)
 	}
 
 	session.MarkSessionQer(session.Qers)
@@ -325,13 +351,14 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	//  We need a kind of refactoring to clean it up.
 	session.MarkSessionQer(addQERs)
 
-	updated := PacketForwardingRules{
-		Pdrs: addPDRs,
-		Fars: addFARs,
-		Qers: addQERs,
+	updated = PacketForwardingRules{
+		Pdrs: updatePDRs,
+		Fars: updateFARs,
+		Qers: updateQERs,
 	}
 
-	cause := upf.SendMsgToUPF(UpfMsgTypeMod, session, updated)
+	// Send the session before updating to datapath
+	cause = upf.SendMsgToUPF(UpfMsgTypeMod, oldSession, updated)
 	if cause == ie.CauseRequestRejected {
 		return sendError(ErrWriteToDatapath)
 	}
@@ -445,7 +472,7 @@ func (pConn *PFCPConn) handleSessionDeletionRequest(msg message.Message) (messag
 		return sendError(ErrNotFoundWithParam("PFCP session", "localSEID", localSEID))
 	}
 
-	cause := upf.SendMsgToUPF(UpfMsgTypeDel, session, PacketForwardingRules{})
+	cause := upf.SendMsgToUPF(UpfMsgTypeDel, session, session.PacketForwardingRules)
 	if cause == ie.CauseRequestRejected {
 		return sendError(ErrWriteToDatapath)
 	}
