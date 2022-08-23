@@ -92,7 +92,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		// create/delete downlink pdr
 		pdrN6Down := Pdr{
 			SrcIface: core,
-			AppFilter: applicationFilter{
+			AppFilter: ApplicationFilter{
 				DstIP:     ip2int(ueip) + i,
 				DstIPMask: 0xFFFFFFFF,
 			},
@@ -133,7 +133,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			SrcIface:     access,
 			TunnelIP4Dst: ip2int(u.AccessIP),
 			TunnelTEID:   n3TEID + i,
-			AppFilter: applicationFilter{
+			AppFilter: ApplicationFilter{
 				SrcIP:     ip2int(ueip) + i,
 				SrcIPMask: 0xFFFFFFFF,
 			},
@@ -156,7 +156,7 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 			SrcIface:     access,
 			TunnelIP4Dst: ip2int(u.AccessIP),
 			TunnelTEID:   n3TEID + i,
-			AppFilter: applicationFilter{
+			AppFilter: ApplicationFilter{
 				DstIP:     ip2int(n9appip),
 				DstIPMask: 0xFFFFFFFF,
 			},
