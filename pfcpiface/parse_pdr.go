@@ -14,25 +14,25 @@ import (
 	"go.uber.org/zap"
 )
 
-// portRange encapsulates a L4 port range as seen in PDRs. A zero value portRange represents
+// PortRange encapsulates a L4 port range as seen in PDRs. A zero value PortRange represents
 // a wildcard match, but use of the dedicated new*PortRange() functions is encouraged.
-type portRange struct {
+type PortRange struct {
 	low  uint16
 	high uint16
 }
 
 // newWildcardPortRange returns a portRange that matches on every possible port, i.e., implements
 // no filtering.
-func newWildcardPortRange() portRange {
-	return portRange{
+func newWildcardPortRange() PortRange {
+	return PortRange{
 		low:  0,
 		high: math.MaxUint16,
 	}
 }
 
 // newExactMatchPortRange returns a portRange that matches on exactly the given port.
-func newExactMatchPortRange(port uint16) portRange {
-	return portRange{
+func newExactMatchPortRange(port uint16) PortRange {
+	return PortRange{
 		low:  port,
 		high: port,
 	}
@@ -41,23 +41,31 @@ func newExactMatchPortRange(port uint16) portRange {
 // newRangeMatchPortRange returns a portRange that matches on the given range [low, high].
 // low must be smaller than high. Creating exact and wildcard matches with this function is
 // possible, but use of the dedicated functions is encouraged.
-func newRangeMatchPortRange(low, high uint16) portRange {
+func newRangeMatchPortRange(low, high uint16) PortRange {
 	if low > high {
-		return portRange{}
+		return PortRange{}
 	}
 
-	return portRange{
+	return PortRange{
 		low:  low,
 		high: high,
 	}
 }
 
-func (pr portRange) String() string {
+func (pr PortRange) getLow() uint16 {
+	return pr.low
+}
+
+func (pr PortRange) getHigh() uint16 {
+	return pr.high
+}
+
+func (pr PortRange) String() string {
 	return fmt.Sprintf("{%v-%v}", pr.low, pr.high)
 }
 
 // Width returns the number of ports covered by this portRange.
-func (pr portRange) Width() uint16 {
+func (pr PortRange) Width() uint16 {
 	// Need to handle the zero value.
 	if pr.isWildcardMatch() {
 		return math.MaxUint16
@@ -66,28 +74,28 @@ func (pr portRange) Width() uint16 {
 	}
 }
 
-func (pr portRange) isWildcardMatch() bool {
+func (pr PortRange) isWildcardMatch() bool {
 	return pr.low == 0 && pr.high == math.MaxUint16 ||
 		pr.low == 0 && pr.high == 0
 }
 
-func (pr portRange) isExactMatch() bool {
+func (pr PortRange) isExactMatch() bool {
 	return pr.low == pr.high && pr.high != 0
 }
 
-func (pr portRange) isRangeMatch() bool {
+func (pr PortRange) isRangeMatch() bool {
 	return !pr.isExactMatch() && !pr.isWildcardMatch()
 }
 
 // Returns portRange as an exact match, without checking if it is one. isExactMatch() must be true
 // before calling asExactMatchUnchecked.
-func (pr portRange) asExactMatchUnchecked() portRangeTernaryRule {
+func (pr PortRange) asExactMatchUnchecked() portRangeTernaryRule {
 	return portRangeTernaryRule{port: pr.low, mask: math.MaxUint16}
 }
 
 // Return portRange as a trivial, single value and mask, ternary match. Will fail if conversion is
 // not possible.
-func (pr portRange) asTrivialTernaryMatch() (portRangeTernaryRule, error) {
+func (pr PortRange) asTrivialTernaryMatch() (portRangeTernaryRule, error) {
 	if pr.isWildcardMatch() {
 		return portRangeTernaryRule{0, 0}, nil
 	} else if pr.isExactMatch() {
@@ -105,7 +113,7 @@ const (
 )
 
 // Returns portRange as a list of ternary matches that cover the same range.
-func (pr portRange) asComplexTernaryMatches(strategy RangeConversionStrategy) ([]portRangeTernaryRule, error) {
+func (pr PortRange) asComplexTernaryMatches(strategy RangeConversionStrategy) ([]portRangeTernaryRule, error) {
 	rules := make([]portRangeTernaryRule, 0)
 
 	// Fast path for exact and wildcard matches which are trivial.
@@ -187,7 +195,7 @@ type portRangeTernaryCartesianProduct struct {
 
 // CreatePortRangeCartesianProduct converts two port ranges into a list of ternary
 // rules covering the same range.
-func CreatePortRangeCartesianProduct(src, dst portRange) ([]portRangeTernaryCartesianProduct, error) {
+func CreatePortRangeCartesianProduct(src, dst PortRange) ([]portRangeTernaryCartesianProduct, error) {
 	// A single range rule can result in multiple ternary ones. To cover the same range of packets,
 	// we need to create the Cartesian product of src and dst rules. For now, we only allow one true
 	// range match to keep the complexity in check.
@@ -256,11 +264,11 @@ func CreatePortRangeCartesianProduct(src, dst portRange) ([]portRangeTernaryCart
 	return rules, nil
 }
 
-type applicationFilter struct {
+type ApplicationFilter struct {
 	SrcIP        uint32
 	DstIP        uint32
-	SrcPortRange portRange
-	DstPortRange portRange
+	SrcPortRange PortRange
+	DstPortRange PortRange
 	Proto        uint8
 
 	SrcIPMask uint32
@@ -278,7 +286,7 @@ type Pdr struct {
 	TunnelIP4DstMask uint32
 	TunnelTEIDMask   uint32
 
-	AppFilter applicationFilter
+	AppFilter ApplicationFilter
 
 	Precedence  uint32
 	PdrID       uint32
@@ -299,7 +307,7 @@ func needAllocIP(ueIPaddr *ie.UEIPAddressFields) bool {
 	return true
 }
 
-func (af applicationFilter) String() string {
+func (af ApplicationFilter) String() string {
 	return fmt.Sprintf("ApplicationFilter(srcIP=%v/%x, dstIP=%v/%x, proto=%v/%x, srcPort=%v, dstPort=%v)",
 		int2ip(af.SrcIP), af.SrcIPMask, int2ip(af.DstIP), af.DstIPMask, af.Proto,
 		af.ProtoMask, af.SrcPortRange, af.DstPortRange)
