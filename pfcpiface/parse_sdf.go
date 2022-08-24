@@ -21,7 +21,7 @@ var errBadFilterDesc = errors.New("unsupported Filter Description format")
 
 type endpoint struct {
 	IPNet *net.IPNet
-	ports portRange
+	ports PortRange
 }
 
 func (ep *endpoint) parseNet(ipnet string) error {
@@ -69,7 +69,7 @@ func (ep *endpoint) parsePort(port string) error {
 		return ErrInvalidArgumentWithReason("port", port, "invalid port range")
 	}
 
-	ep.ports = newRangeMatchPortRange(uint16(low), uint16(high))
+	ep.ports = NewRangeMatchPortRange(uint16(low), uint16(high))
 
 	return nil
 }
