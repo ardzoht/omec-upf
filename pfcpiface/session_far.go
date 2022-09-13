@@ -58,7 +58,7 @@ func addEndMarker(farItem Far, endMarkerList *[][]byte) {
 
 	err := udpLayer.SetNetworkLayerForChecksum(ipLayer)
 	if err != nil {
-		log.Info("set checksum for UDP layer in endmarker failed")
+		log.Warn("set checksum for UDP layer in endmarker failed")
 		return
 	}
 
@@ -80,7 +80,7 @@ func addEndMarker(farItem Far, endMarkerList *[][]byte) {
 		outgoingPacket := buffer.Bytes()
 		*endMarkerList = append(*endMarkerList, outgoingPacket)
 	} else {
-		log.Info("go packet serialize failed : ", err)
+		log.Warn("go packet serialize failed : ", err)
 	}
 }
 

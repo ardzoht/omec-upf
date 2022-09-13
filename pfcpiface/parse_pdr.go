@@ -645,10 +645,6 @@ func (p *Pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippoo
 			}
 		}
 	}
-	/*qerID, err := ie1.QERID()
-	if err != nil {
-		log.Println("Could not read QER ID!")
-	}*/
 
 	p.Precedence = precedence
 	p.PdrID = uint32(pdrID)
