@@ -111,9 +111,9 @@ func (f *Far) parseFAR(farIE *ie.IE, fseid uint64, upf *Upf, op operation) error
 		case ie.OuterHeaderCreation:
 			fields = Set(fields, FwdIEOuterHeaderCreation)
 
-			ohcFields, err := fwdIE.OuterHeaderCreation()
-			if err != nil {
-				log.Info("Unable to parse OuterHeaderCreationFields!")
+			ohcFields, ohcErr := fwdIE.OuterHeaderCreation()
+			if ohcErr != nil {
+				log.Warnf("Unable to parse OuterHeaderCreationFields! %v", err)
 				continue
 			}
 
@@ -126,21 +126,23 @@ func (f *Far) parseFAR(farIE *ie.IE, fseid uint64, upf *Upf, op operation) error
 
 			f.DstIntf, err = fwdIE.DestinationInterface()
 			if err != nil {
-				log.Info("Unable to parse DestinationInterface field")
+				log.Warnf("Unable to parse DestinationInterface field %v", err)
 				continue
 			}
 
-			if f.DstIntf == ie.DstInterfaceAccess {
+			switch f.DstIntf {
+			case ie.DstInterfaceAccess:
 				f.TunnelIP4Src = ip2int(upf.AccessIP)
-			} else if f.DstIntf == ie.DstInterfaceCore {
+			case ie.DstInterfaceCore:
 				f.TunnelIP4Src = ip2int(upf.CoreIP)
 			}
+
 		case ie.PFCPSMReqFlags:
 			fields = Set(fields, FwdIEPfcpSMReqFlags)
 
 			smReqFlags, err := fwdIE.PFCPSMReqFlags()
 			if err != nil {
-				log.Info("Unable to parse PFCPSMReqFlags!")
+				log.Warnf("Unable to parse PFCPSMReqFlags! %v", err)
 				continue
 			}
 

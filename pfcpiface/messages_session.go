@@ -154,6 +154,10 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 		localFSEID = ie.NewFSEID(session.localSEID, nil, localIP)
 	}
 
+	log.Debugw("Sending session establishment response:",
+		zap.Uint64("Local SEID:", session.localSEID),
+		zap.Uint64("Remote SEID:", remoteSEID))
+
 	// Build response message
 	seres := message.NewSessionEstablishmentResponse(0, /* MO?? <-- what's this */
 		0,                                    /* FO <-- what's this? */
@@ -432,6 +436,9 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		log.Errorf("Failed to put PFCP session to store: %v", err)
 	}
 
+	log.Debugw("Sending session modification response:",
+		zap.Uint64("Local SEID:", localSEID),
+		zap.Uint64("Remote SEID:", remoteSEID))
 	// Build response message
 	smres := message.NewSessionModificationResponse(0, /* MO?? <-- what's this */
 		0,                                    /* FO <-- what's this? */
@@ -483,6 +490,10 @@ func (pConn *PFCPConn) handleSessionDeletionRequest(msg message.Message) (messag
 
 	/* delete sessionRecord */
 	pConn.RemoveSession(session)
+
+	log.Debugw("Sending session deletion response:",
+		zap.Uint64("Local SEID:", localSEID),
+		zap.Uint64("Remote SEID:", session.remoteSEID))
 
 	// Build response message
 	smres := message.NewSessionDeletionResponse(0, /* MO?? <-- what's this */
@@ -577,7 +588,7 @@ func (pConn *PFCPConn) handleSessionReportResponse(msg message.Message) error {
 			return errProcess(ErrNotFoundWithParam("PFCP session context", "SEID", seid))
 		}
 
-		log.Warn("context not found, deleting session locally")
+		log.Warnf("Session context not found, deleting session locally with ID: %s", seid)
 
 		pConn.RemoveSession(sessItem)
 
