@@ -216,38 +216,38 @@ func (u *Upf) sim(mode simMode, s *SimModeInfo) {
 		fars := []Far{farDown, farN6Up, farN9Up}
 
 		// create/delete uplink qer
-		qerN6 := qer{
-			qerID: n6,
-			fseID: uint64(n3TEID + i),
-			qfi:   9,
-			ulGbr: 50000,
-			ulMbr: 90000,
-			dlGbr: 60000,
-			dlMbr: 80000,
+		qerN6 := Qer{
+			QerID: n6,
+			FseID: uint64(n3TEID + i),
+			Qfi:   9,
+			UlGbr: 50000,
+			UlMbr: 90000,
+			DlGbr: 60000,
+			DlMbr: 80000,
 		}
 
-		qerN9 := qer{
-			qerID: n9,
-			fseID: uint64(n3TEID + i),
-			qfi:   8,
-			ulGbr: 50000,
-			ulMbr: 60000,
-			dlGbr: 70000,
-			dlMbr: 90000,
+		qerN9 := Qer{
+			QerID: n9,
+			FseID: uint64(n3TEID + i),
+			Qfi:   8,
+			UlGbr: 50000,
+			UlMbr: 60000,
+			DlGbr: 70000,
+			DlMbr: 90000,
 		}
 
-		qers := []qer{qerN6, qerN9}
+		qers := []Qer{qerN6, qerN9}
 
 		// create/delete session qers
-		sessionQer := qer{
-			qerID:    1,
-			fseID:    uint64(n3TEID + i),
-			qosLevel: SessionQos,
-			qfi:      0,
-			ulGbr:    0,
-			ulMbr:    100000,
-			dlGbr:    0,
-			dlMbr:    500000,
+		sessionQer := Qer{
+			QerID:    1,
+			FseID:    uint64(n3TEID + i),
+			QosLevel: SessionQos,
+			Qfi:      0,
+			UlGbr:    0,
+			UlMbr:    100000,
+			DlGbr:    0,
+			DlMbr:    500000,
 		}
 
 		qers = append(qers, sessionQer)

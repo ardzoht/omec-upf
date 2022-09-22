@@ -84,7 +84,7 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 
 	addPDRs := make([]Pdr, 0, MaxItems)
 	addFARs := make([]Far, 0, MaxItems)
-	addQERs := make([]qer, 0, MaxItems)
+	addQERs := make([]Qer, 0, MaxItems)
 
 	for _, cPDR := range sereq.CreatePDR {
 		var p Pdr
@@ -109,12 +109,12 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 	}
 
 	for _, cQER := range sereq.CreateQER {
-		var q qer
+		var q Qer
 		if err := q.parseQER(cQER, session.localSEID); err != nil {
 			return errProcessReply(err, ie.CauseRequestRejected)
 		}
 
-		q.fseidIP = fseidIP
+		q.FseidIP = fseidIP
 		session.CreateQER(q)
 		addQERs = append(addQERs, q)
 	}
@@ -221,7 +221,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	addPDRs := make([]Pdr, 0, MaxItems)
 	addFARs := make([]Far, 0, MaxItems)
-	addQERs := make([]qer, 0, MaxItems)
+	addQERs := make([]Qer, 0, MaxItems)
 
 	for _, cPDR := range smreq.CreatePDR {
 		var p Pdr
@@ -248,12 +248,12 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	}
 
 	for _, cQER := range smreq.CreateQER {
-		var q qer
+		var q Qer
 		if err := q.parseQER(cQER, localSEID); err != nil {
 			return sendError(err)
 		}
 
-		q.fseidIP = fseidIP
+		q.FseidIP = fseidIP
 
 		session.CreateQER(q)
 		addQERs = append(addQERs, q)
@@ -272,7 +272,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	updatePDRs := make([]Pdr, 0, MaxItems)
 	updateFARs := make([]Far, 0, MaxItems)
-	updateQERs := make([]qer, 0, MaxItems)
+	updateQERs := make([]Qer, 0, MaxItems)
 	endMarkerList := make([]EndMarker, 0, MaxItems)
 
 	// maintain a copy of session before updating for session modification
@@ -282,6 +282,10 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		localSEID:  session.localSEID,
 		remoteSEID: session.remoteSEID,
 	}
+
+	oldSession.Pdrs = make([]Pdr, len(session.Pdrs))
+	oldSession.Fars = make([]Far, len(session.Fars))
+	oldSession.Qers = make([]Qer, len(session.Qers))
 	copy(oldSession.Pdrs, session.Pdrs)
 	copy(oldSession.Fars, session.Fars)
 	copy(oldSession.Qers, session.Qers)
@@ -330,7 +334,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	for _, uQER := range smreq.UpdateQER {
 		var (
-			q   qer
+			q   Qer
 			err error
 		)
 
@@ -338,7 +342,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 			return sendError(err)
 		}
 
-		q.fseidIP = fseidIP
+		q.FseidIP = fseidIP
 
 		err = session.UpdateQER(q)
 		if err != nil {
@@ -376,7 +380,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	delPDRs := make([]Pdr, 0, MaxItems)
 	delFARs := make([]Far, 0, MaxItems)
-	delQERs := make([]qer, 0, MaxItems)
+	delQERs := make([]Qer, 0, MaxItems)
 
 	for _, rPDR := range smreq.RemovePDR {
 		pdrID, err := rPDR.PDRID()

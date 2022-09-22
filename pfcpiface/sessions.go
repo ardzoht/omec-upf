@@ -12,7 +12,7 @@ import (
 type PacketForwardingRules struct {
 	Pdrs []Pdr
 	Fars []Far
-	Qers []qer
+	Qers []Qer
 }
 
 // PFCPSession implements one PFCP session.
@@ -45,7 +45,7 @@ func (pConn *PFCPConn) NewPFCPSession(rseid uint64) (PFCPSession, bool) {
 			PacketForwardingRules: PacketForwardingRules{
 				Pdrs: make([]Pdr, 0, MaxItems),
 				Fars: make([]Far, 0, MaxItems),
-				Qers: make([]qer, 0, MaxItems),
+				Qers: make([]Qer, 0, MaxItems),
 			},
 		}
 		s.metrics = metrics.NewSession(pConn.nodeID.remote)

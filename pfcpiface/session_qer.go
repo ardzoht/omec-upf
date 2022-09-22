@@ -11,14 +11,14 @@ const (
 )
 
 // CreateQER appends qer to existing list of QERs in the session.
-func (s *PFCPSession) CreateQER(q qer) {
+func (s *PFCPSession) CreateQER(q Qer) {
 	s.Qers = append(s.Qers, q)
 }
 
 // UpdateQER updates existing qer in the session.
-func (s *PFCPSession) UpdateQER(q qer) error {
+func (s *PFCPSession) UpdateQER(q Qer) error {
 	for idx, v := range s.Qers {
-		if v.qerID == q.qerID {
+		if v.QerID == q.QerID {
 			s.Qers[idx] = q
 			return nil
 		}
@@ -61,7 +61,7 @@ func findItemIndex(slice []uint32, val uint32) int {
 }
 
 // MarkSessionQer : identify and Mark session QER with flag.
-func (s *PFCPSession) MarkSessionQer(qers []qer) {
+func (s *PFCPSession) MarkSessionQer(qers []Qer) {
 	sessQerIDList := make([]uint32, 0)
 	lastPdrIndex := len(s.Pdrs) - 1
 	// create search list with first pdr's qerlist */
@@ -105,23 +105,23 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 	}
 
 	for idx, qer := range qers {
-		if contains(sessQerIDList, qer.qerID) {
-			if qer.ulGbr > 0 || qer.dlGbr > 0 {
+		if contains(sessQerIDList, qer.QerID) {
+			if qer.UlGbr > 0 || qer.DlGbr > 0 {
 				log.Warn("Do not consider qer with non zero gbr value for session qer")
 				continue
 			}
 
-			if qer.ulMbr >= sessionMbr {
+			if qer.UlMbr >= sessionMbr {
 				sessionIdx = idx
-				sessQerID = qer.qerID
-				sessionMbr = qer.ulMbr
+				sessQerID = qer.QerID
+				sessionMbr = qer.UlMbr
 			}
 		}
 	}
 
 	log.Warn("session QER found. QER ID : ", sessQerID)
 
-	qers[sessionIdx].qosLevel = SessionQos
+	qers[sessionIdx].QosLevel = SessionQos
 
 	for i := range s.Pdrs {
 		// remove common qerID from pdr's qer list
@@ -134,9 +134,9 @@ func (s *PFCPSession) MarkSessionQer(qers []qer) {
 }
 
 // RemoveQER removes qer from existing list of QERs in the session.
-func (s *PFCPSession) RemoveQER(id uint32) (*qer, error) {
+func (s *PFCPSession) RemoveQER(id uint32) (*Qer, error) {
 	for idx, v := range s.Qers {
-		if v.qerID == id {
+		if v.QerID == id {
 			s.Qers = append(s.Qers[:idx], s.Qers[idx+1:]...)
 			return &v, nil
 		}
