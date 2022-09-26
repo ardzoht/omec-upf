@@ -15,7 +15,7 @@ import (
 
 type qerTestCase struct {
 	input       *ie.IE
-	expected    *qer
+	expected    *Qer
 	description string
 }
 
@@ -28,10 +28,10 @@ func TestParseQER(t *testing.T) {
 				WithID(999).
 				WithMethod(pfcpsimLib.IEMethod(create)).
 				WithQFI(0x09).Build(),
-			expected: &qer{
-				qerID: 999,
-				qfi:   0x09,
-				fseID: FSEID,
+			expected: &Qer{
+				QerID: 999,
+				Qfi:   0x09,
+				FseID: FSEID,
 			},
 			description: "Valid Create QER input",
 		},
@@ -40,16 +40,16 @@ func TestParseQER(t *testing.T) {
 				WithID(999).
 				WithMethod(pfcpsimLib.IEMethod(update)).
 				WithQFI(0x09).Build(),
-			expected: &qer{
-				qerID: 999,
-				qfi:   0x09,
-				fseID: FSEID,
+			expected: &Qer{
+				QerID: 999,
+				Qfi:   0x09,
+				FseID: FSEID,
 			},
 			description: "Valid Update QER input",
 		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
-			mockQER := &qer{}
+			mockQER := &Qer{}
 
 			err := mockQER.parseQER(scenario.input, FSEID)
 			require.NoError(t, err)
@@ -70,12 +70,12 @@ func TestParseQERShouldError(t *testing.T) {
 				ie.NewMBR(0, 1),
 				ie.NewGBR(2, 3),
 			),
-			expected:    &qer{},
+			expected:    &Qer{},
 			description: "Invalid QER input: no QER ID provided",
 		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
-			mockQER := &qer{}
+			mockQER := &Qer{}
 
 			err := mockQER.parseQER(scenario.input, FSEID)
 			require.Error(t, err)

@@ -93,7 +93,7 @@ func Test_endpoint_parsePort(t *testing.T) {
 			wantErr: false},
 		{name: "normal port range",
 			args:    "8080-8084",
-			want:    endpoint{ports: newRangeMatchPortRange(8080, 8084)},
+			want:    endpoint{ports: NewRangeMatchPortRange(8080, 8084)},
 			wantErr: false},
 		{name: "invalid empty port range",
 			args:    "",

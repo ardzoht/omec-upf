@@ -16,7 +16,7 @@ import (
 type farTestCase struct {
 	input       *ie.IE
 	op          operation
-	expected    *far
+	expected    *Far
 	description string
 }
 
@@ -41,10 +41,10 @@ func TestParseFAR(t *testing.T) {
 				WithAction(ActionDrop).
 				WithDstInterface(core).
 				BuildFAR(),
-			expected: &far{
-				farID:       999,
-				applyAction: ActionDrop,
-				fseID:       FSEID,
+			expected: &Far{
+				FarID:       999,
+				ApplyAction: ActionDrop,
+				FseID:       FSEID,
 			},
 			description: "Valid Uplink FAR input with create operation",
 		},
@@ -58,25 +58,25 @@ func TestParseFAR(t *testing.T) {
 				WithDownlinkIP(UEAddressForDownlink.String()).
 				WithTEID(100).
 				BuildFAR(),
-			expected: &far{
-				farID:        1,
-				fseID:        FSEID,
-				applyAction:  ActionForward,
-				dstIntf:      access,
-				tunnelTEID:   100,
-				tunnelType:   access,
-				tunnelIP4Src: ip2int(coreIP),
-				tunnelIP4Dst: ip2int(UEAddressForDownlink),
-				tunnelPort:   uint16(defaultGTPProtocolPort),
+			expected: &Far{
+				FarID:        1,
+				FseID:        FSEID,
+				ApplyAction:  ActionForward,
+				DstIntf:      access,
+				TunnelTEID:   100,
+				TunnelType:   access,
+				TunnelIP4Src: ip2int(coreIP),
+				TunnelIP4Dst: ip2int(UEAddressForDownlink),
+				TunnelPort:   uint16(defaultGTPProtocolPort),
 			},
 			description: "Valid Downlink FAR input with update operation",
 		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
-			mockFar := &far{}
-			mockUpf := &upf{
-				accessIP: net.ParseIP("192.168.0.1"),
-				coreIP:   coreIP,
+			mockFar := &Far{}
+			mockUpf := &Upf{
+				AccessIP: net.ParseIP("192.168.0.1"),
+				CoreIP:   coreIP,
 			}
 
 			err := mockFar.parseFAR(scenario.input, FSEID, mockUpf, scenario.op)
@@ -102,9 +102,9 @@ func TestParseFARShouldError(t *testing.T) {
 					ie.NewDestinationInterface(ie.DstInterfaceCore),
 				),
 			),
-			expected: &far{
-				farID: 1,
-				fseID: FSEID,
+			expected: &Far{
+				FarID: 1,
+				FseID: FSEID,
 			},
 			description: "Uplink FAR with invalid action",
 		},
@@ -118,9 +118,9 @@ func TestParseFARShouldError(t *testing.T) {
 					ie.NewOuterHeaderCreation(0x100, 100, "10.0.0.1", "", 0, 0, 0),
 				),
 			),
-			expected: &far{
-				farID: 1,
-				fseID: FSEID,
+			expected: &Far{
+				FarID: 1,
+				FseID: FSEID,
 			},
 			description: "Downlink FAR with invalid action",
 		},
@@ -133,17 +133,17 @@ func TestParseFARShouldError(t *testing.T) {
 					ie.NewOuterHeaderCreation(0x100, 100, "10.0.0.1", "", 0, 0, 0),
 				),
 			),
-			expected: &far{
-				fseID: FSEID,
+			expected: &Far{
+				FseID: FSEID,
 			},
 			description: "Malformed Downlink FAR with missing FARID",
 		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
-			mockFar := &far{}
-			mockUpf := &upf{
-				accessIP: net.ParseIP("192.168.0.1"),
-				coreIP:   net.ParseIP("10.0.0.1"),
+			mockFar := &Far{}
+			mockUpf := &Upf{
+				AccessIP: net.ParseIP("192.168.0.1"),
+				CoreIP:   net.ParseIP("10.0.0.1"),
 			}
 
 			err := mockFar.parseFAR(scenario.input, 101, mockUpf, scenario.op)
