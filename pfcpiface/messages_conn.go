@@ -102,6 +102,9 @@ func (pConn *PFCPConn) associationIEs() []*ie.IE {
 
 	features := make([]uint8, 4)
 
+	// FTUP support
+	setTeidAllocFeature(features...)
+
 	if upf.enableUeIPAlloc {
 		setUeipFeature(features...)
 	}
