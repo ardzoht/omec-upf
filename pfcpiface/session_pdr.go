@@ -28,25 +28,62 @@ func releaseAllocatedIPs(ippool *IPPool, session *PFCPSession) error {
 	return nil
 }
 
-func addPdrInfo(msg *message.SessionEstablishmentResponse,
-	session *PFCPSession) {
-	log.Info("Add PDRs with UPF alloc IPs to Establishment response")
+// Release allocated teids.
+func releaseAllocatedTEIDs(generator *IDAllocator, session *PFCPSession) {
+	log.Infof("Release allocate TEIDs for session: %v", session.localSEID)
 
 	for _, pdr := range session.Pdrs {
+		log.Debugf("Releasing TEID %v of session %v", pdr.TunnelTEID, session.localSEID)
+		generator.Free(pdr.TunnelTEID)
+	}
+}
+
+func findChoosedPdr(session *PFCPSession, chooseID uint8) *Pdr {
+	log.Debugf("Find choosed PDR with TEID allocation")
+
+	for _, pdr := range session.Pdrs {
+		if pdr.ChooseIDFlag && pdr.ChooseID == chooseID {
+			return &pdr
+		}
+	}
+	return nil
+}
+
+func addPdrInfo(msg *message.SessionEstablishmentResponse,
+	session *PFCPSession) {
+	log.Info("Add PDRs with UPF alloc teids/IPs to Establishment response")
+
+	for _, pdr := range session.Pdrs {
+		createdPDR := ie.NewCreatedPDR()
+		createdPDR.Add(ie.NewPDRID(uint16(pdr.PdrID)))
+		needAlloc := false
+
 		if (pdr.AllocIPFlag) && (pdr.SrcIface == core) {
-			log.Info("pdrID : ", pdr.PdrID)
+			needAlloc = true
 
 			var (
 				flags uint8  = 0x02
 				ueIP  net.IP = int2ip(pdr.UeAddress)
 			)
 
-			log.Info("ueIP : ", ueIP.String())
-			msg.CreatedPDR = append(msg.CreatedPDR,
-				ie.NewCreatedPDR(
-					ie.NewPDRID(uint16(pdr.PdrID)),
-					ie.NewUEIPAddress(flags, ueIP.String(), "", 0, 0),
-				))
+			log.Info("pdrID: %v Adding ueIP : %v", pdr.PdrID, ueIP.String())
+			createdPDR.Add(ie.NewUEIPAddress(flags, ueIP.String(), "", 0, 0))
+		}
+
+		if pdr.AllocTEIDFlag {
+			needAlloc = true
+
+			var (
+				flags  uint8  = 0x01 // IPv4 flag is present
+				teidIP net.IP = int2ip(pdr.TunnelIP4Dst)
+			)
+
+			log.Info("pdrID: %v Adding TEID : %v", pdr.PdrID, pdr.TunnelTEID)
+			createdPDR.Add(ie.NewFTEID(flags, pdr.TunnelTEID, teidIP, nil, pdr.ChooseID))
+		}
+
+		if needAlloc {
+			msg.CreatedPDR = append(msg.CreatedPDR, createdPDR)
 		}
 	}
 }
@@ -87,3 +124,4 @@ func (s *PFCPSession) RemovePDR(id uint32) (*Pdr, error) {
 
 	return nil, ErrNotFound("PDR")
 }
+

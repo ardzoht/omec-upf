@@ -20,7 +20,6 @@ func Set(b, flag Bits) Bits { return b | flag }
 // func Clear(b, flag Bits) Bits  { return b &^ flag }
 // func Toggle(b, flag Bits) Bits { return b ^ flag }
 // func Has(b, flag Bits) bool { return b&flag != 0 }
-
 func setUeipFeature(features ...uint8) {
 	if len(features) >= 3 {
 		features[2] = features[2] | 0x04
@@ -31,6 +30,10 @@ func setEndMarkerFeature(features ...uint8) {
 	if len(features) >= 2 {
 		features[1] = features[1] | 0x01
 	}
+}
+
+func setTeidAllocFeature(features ...uint8) {
+	features[0] = features[0] | 0x10
 }
 
 func has2ndBit(f uint8) bool {
@@ -139,3 +142,4 @@ func GetSliceTCMeterIndex(sliceID uint8, TC uint8) (int64, error) {
 
 	return int64((sliceID << 2) + (TC & 0b11)), nil
 }
+

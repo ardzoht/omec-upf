@@ -88,7 +88,7 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 
 	for _, cPDR := range sereq.CreatePDR {
 		var p Pdr
-		if err := p.parsePDR(cPDR, session.localSEID, pConn.appPFDs, upf.ippool); err != nil {
+		if err := p.parsePDR(cPDR, pConn.appPFDs, upf.ippool, upf, &session); err != nil {
 			return errProcessReply(err, ie.CauseRequestRejected)
 		}
 
@@ -225,7 +225,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 
 	for _, cPDR := range smreq.CreatePDR {
 		var p Pdr
-		if err := p.parsePDR(cPDR, localSEID, pConn.appPFDs, upf.ippool); err != nil {
+		if err := p.parsePDR(cPDR, pConn.appPFDs, upf.ippool, upf, &session); err != nil {
 			return sendError(err)
 		}
 
@@ -296,7 +296,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 			err error
 		)
 
-		if err = p.parsePDR(uPDR, localSEID, pConn.appPFDs, upf.ippool); err != nil {
+		if err = p.parsePDR(uPDR, pConn.appPFDs, upf.ippool, upf, &session); err != nil {
 			return sendError(err)
 		}
 
@@ -392,6 +392,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		if err != nil {
 			return sendError(err)
 		}
+		upf.teidAllocator.Free(p.TunnelTEID)
 
 		delPDRs = append(delPDRs, *p)
 	}
@@ -491,6 +492,9 @@ func (pConn *PFCPConn) handleSessionDeletionRequest(msg message.Message) (messag
 	if err := releaseAllocatedIPs(upf.ippool, &session); err != nil {
 		return sendError(ErrOperationFailedWithReason("session IP dealloc", err.Error()))
 	}
+
+	// Release all TEIDs on the session
+	releaseAllocatedTEIDs(upf.teidAllocator, &session)
 
 	/* delete sessionRecord */
 	pConn.RemoveSession(session)
@@ -608,3 +612,4 @@ func (pConn *PFCPConn) handleSessionReportResponse(msg message.Message) error {
 
 	return nil
 }
+
