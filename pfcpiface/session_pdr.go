@@ -124,4 +124,3 @@ func (s *PFCPSession) RemovePDR(id uint32) (*Pdr, error) {
 
 	return nil, ErrNotFound("PDR")
 }
-

@@ -612,4 +612,3 @@ func (pConn *PFCPConn) handleSessionReportResponse(msg message.Message) error {
 
 	return nil
 }
-

@@ -68,4 +68,3 @@ func (idAllocator *IDAllocator) updateOffset() {
 	idAllocator.offset++
 	idAllocator.offset = idAllocator.offset % idAllocator.valueRange
 }
-

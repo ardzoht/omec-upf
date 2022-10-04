@@ -181,4 +181,3 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 
 	return u
 }
-
