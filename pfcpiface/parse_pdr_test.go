@@ -29,6 +29,7 @@ func Test_parsePDR(t *testing.T) {
 	qerID := uint32(4)
 	farID := uint32(2)
 	teid := uint32(1234)
+	upf := &Upf{}
 
 	for _, scenario := range []pdrTestCase{
 		{
@@ -121,7 +122,9 @@ func Test_parsePDR(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			err := mockPDR.parsePDR(scenario.input, FSEID, mockMapPFD, mockIPPool)
+			session := &PFCPSession{localSEID: 1}
+
+			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.NoError(t, err)
 
 			assert.Equal(t, mockPDR, scenario.expected)
@@ -131,6 +134,7 @@ func Test_parsePDR(t *testing.T) {
 
 func TestParsePDRShouldError(t *testing.T) {
 	var FSEID uint64 = 100
+	upf := &Upf{}
 
 	for _, scenario := range []pdrTestCase{
 		{
@@ -160,7 +164,9 @@ func TestParsePDRShouldError(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			err := mockPDR.parsePDR(scenario.input, FSEID, mockMapPFD, mockIPPool)
+			session := &PFCPSession{localSEID: 1}
+
+			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.Error(t, err)
 
 			assert.Equal(t, scenario.expected, mockPDR)
@@ -710,7 +716,10 @@ func Test_pdr_parsePDI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Pdr{}
-			if err := p.parsePDI(tt.args.pdiIEs, tt.args.appPFDs, tt.args.ippool); (err != nil) != tt.wantErr {
+			upf := &Upf{}
+			session := &PFCPSession{localSEID: 1}
+
+			if err := p.parsePDI(tt.args.pdiIEs, tt.args.appPFDs, tt.args.ippool, upf, session); (err != nil) != tt.wantErr {
 				t.Errorf("parsePDI() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

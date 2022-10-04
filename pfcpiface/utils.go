@@ -142,4 +142,3 @@ func GetSliceTCMeterIndex(sliceID uint8, TC uint8) (int64, error) {
 
 	return int64((sliceID << 2) + (TC & 0b11)), nil
 }
-
