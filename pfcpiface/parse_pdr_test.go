@@ -122,7 +122,7 @@ func Test_parsePDR(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			session := &PFCPSession{localSEID: 1}
+			session := &PFCPSession{localSEID: FSEID}
 
 			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.NoError(t, err)
@@ -164,7 +164,7 @@ func TestParsePDRShouldError(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			session := &PFCPSession{localSEID: 1}
+			session := &PFCPSession{localSEID: FSEID}
 
 			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.Error(t, err)
