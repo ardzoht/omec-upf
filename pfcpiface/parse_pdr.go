@@ -328,9 +328,9 @@ func allocateTEID(p *Pdr, upf *Upf) error {
 
 	switch p.SrcIface {
 	case ie.SrcInterfaceAccess:
-		p.TunnelIP4Dst = ip2int(upf.CoreIP)
-	case ie.SrcInterfaceCore:
 		p.TunnelIP4Dst = ip2int(upf.AccessIP)
+	case ie.SrcInterfaceCore:
+		p.TunnelIP4Dst = ip2int(upf.CoreIP)
 	}
 	p.TunnelTEIDMask = 0xFFFFFFFF
 	p.TunnelIP4DstMask = 0xFFFFFFFF
