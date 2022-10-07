@@ -12,7 +12,7 @@ type IDAllocator struct {
 	minValue   uint32
 	maxValue   uint32
 	valueRange uint32
-	offset     uint32
+	id         uint32
 	usedMap    map[uint32]bool
 }
 
@@ -24,7 +24,7 @@ func NewIDAllocator(minValue, maxValue uint32) *IDAllocator {
 }
 
 func (idAllocator *IDAllocator) init(minValue, maxValue uint32) {
-	idAllocator.offset = 0
+	idAllocator.id = minValue
 	idAllocator.minValue = minValue
 	idAllocator.maxValue = maxValue
 	idAllocator.valueRange = maxValue - minValue + 1
@@ -36,21 +36,12 @@ func (idAllocator *IDAllocator) Allocate() (uint32, error) {
 	idAllocator.lock.Lock()
 	defer idAllocator.lock.Unlock()
 
-	offsetBegin := idAllocator.offset
-	for {
-		if _, ok := idAllocator.usedMap[idAllocator.offset]; ok {
-			idAllocator.updateOffset()
-
-			if idAllocator.offset == offsetBegin {
-				return 0, errors.New("No available value range to allocate id")
-			}
-		} else {
-			break
-		}
+	id := idAllocator.id
+	if idAllocator.id == idAllocator.maxValue+1 {
+		return 0, errors.New("no available value range to allocate id")
 	}
-	idAllocator.usedMap[idAllocator.offset] = true
-	id := idAllocator.offset + idAllocator.minValue
-	idAllocator.updateOffset()
+	idAllocator.usedMap[idAllocator.id] = true
+	idAllocator.id++
 	return id, nil
 }
 
@@ -62,9 +53,4 @@ func (idAllocator *IDAllocator) Free(id uint32) {
 	idAllocator.lock.Lock()
 	defer idAllocator.lock.Unlock()
 	delete(idAllocator.usedMap, id-idAllocator.minValue)
-}
-
-func (idAllocator *IDAllocator) updateOffset() {
-	idAllocator.offset++
-	idAllocator.offset = idAllocator.offset % idAllocator.valueRange
 }
