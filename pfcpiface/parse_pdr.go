@@ -265,6 +265,7 @@ func CreatePortRangeCartesianProduct(src, dst PortRange) ([]portRangeTernaryCart
 }
 
 type ApplicationFilter struct {
+	FilterID     uint32
 	SrcIP        uint32
 	DstIP        uint32
 	SrcPortRange PortRange
@@ -523,15 +524,37 @@ func (p *Pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 	return nil
 }
 
-func (p *Pdr) parseSDFFilter(ie *ie.IE) error {
+func (p *Pdr) parseSDFFilter(ie *ie.IE, session *PFCPSession) error {
 	sdfFields, err := ie.SDFFilter()
 	if err != nil {
 		return err
 	}
 
-	flowDesc := sdfFields.FlowDescription
-	if flowDesc == "" {
-		return ErrOperationFailedWithReason("parse SDF Filter", "empty filter description")
+	// Handle bidirectional flows
+	if sdfFields.HasBID() {
+		p.AppFilter.FilterID = sdfFields.SDFFilterID
+		sdfFilter := findSDFFilter(session, sdfFields.SDFFilterID)
+
+		if sdfFilter != nil {
+			p.AppFilter.DstIP = sdfFilter.SrcIP
+			p.AppFilter.DstIPMask = sdfFilter.SrcIPMask
+			p.AppFilter.SrcIP = sdfFilter.DstIP
+			p.AppFilter.SrcIPMask = sdfFilter.DstIPMask
+			p.AppFilter.DstPortRange = sdfFilter.SrcPortRange
+			p.AppFilter.SrcPortRange = sdfFilter.DstPortRange
+
+			p.AppFilter.Proto = sdfFilter.Proto
+			p.AppFilter.ProtoMask = sdfFilter.ProtoMask
+			return nil
+		}
+	}
+
+	var flowDesc string
+	if sdfFields.HasFD() {
+		flowDesc = sdfFields.FlowDescription
+		if flowDesc == "" {
+			return ErrOperationFailedWithReason("parse SDF Filter", "empty filter description")
+		}
 	}
 
 	log.Debugw(
@@ -623,7 +646,7 @@ func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPoo
 				return err
 			}
 		case ie.SDFFilter:
-			if err := p.parseSDFFilter(ie2); err != nil {
+			if err := p.parseSDFFilter(ie2, session); err != nil {
 				log.Errorf("Failed to parse SDF Filter IE: %v", err)
 				return err
 			}
@@ -713,3 +736,4 @@ func (p *Pdr) parsePDR(ie1 *ie.IE, appPFDs map[string]appPFD, ippool *IPPool, up
 
 	return nil
 }
+

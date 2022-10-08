@@ -49,6 +49,17 @@ func findChoosedPdr(session *PFCPSession, chooseID uint8) *Pdr {
 	return nil
 }
 
+func findSDFFilter(session *PFCPSession, filterID uint32) *ApplicationFilter {
+	log.Debugf("Find associated SDF filter on session's PDRs")
+
+	for _, pdr := range session.Pdrs {
+		if pdr.AppFilter.FilterID == filterID {
+			return &pdr.AppFilter
+		}
+	}
+	return nil
+}
+
 func addPdrInfo(msg *message.SessionEstablishmentResponse,
 	session *PFCPSession) {
 	log.Info("Add PDRs with UPF alloc teids/IPs to Establishment response")
@@ -124,3 +135,4 @@ func (s *PFCPSession) RemovePDR(id uint32) (*Pdr, error) {
 
 	return nil, ErrNotFound("PDR")
 }
+
