@@ -84,7 +84,9 @@ func TestTriggerNoSpaceToAllocateError(t *testing.T) {
 			idGenerator := NewIDAllocator(testCase.minValue, testCase.maxValue)
 
 			for i := 0; i < valueRange; i++ {
-				_, err := idGenerator.Allocate()
+				p, err := idGenerator.Allocate()
+				fmt.Sprint(p)
+
 				if err != nil {
 					t.Error(err)
 					t.FailNow()
