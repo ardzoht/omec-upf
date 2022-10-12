@@ -328,10 +328,10 @@ func allocateTEID(p *Pdr, upf *Upf) error {
 	}
 
 	switch p.SrcIface {
-	case ie.SrcInterfaceAccess:
-		p.TunnelIP4Dst = ip2int(upf.AccessIP)
-	case ie.SrcInterfaceCore:
+	case access:
 		p.TunnelIP4Dst = ip2int(upf.CoreIP)
+	case core:
+		p.TunnelIP4Dst = ip2int(upf.AccessIP)
 	}
 	p.TunnelTEIDMask = 0xFFFFFFFF
 	p.TunnelIP4DstMask = 0xFFFFFFFF
@@ -736,4 +736,3 @@ func (p *Pdr) parsePDR(ie1 *ie.IE, appPFDs map[string]appPFD, ippool *IPPool, up
 
 	return nil
 }
-

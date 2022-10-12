@@ -571,7 +571,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 to assigned 80-400"),
 			direction: core,
 			wantAppFilter: ApplicationFilter{
-				FilterID :1,
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP("192.168.1.1")),
 				DstIP:        ip2int(net.ParseIP(ueAddress)),
 				SrcPortRange: NewRangeMatchPortRange(80, 400),
@@ -588,7 +588,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 to assigned 80-400"),
 			direction: access,
 			wantAppFilter: ApplicationFilter{
-				FilterID :1,
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP(ueAddress)),
 				DstIP:        ip2int(net.ParseIP("192.168.1.1")),
 				SrcPortRange: newWildcardPortRange(),
@@ -605,7 +605,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 80-400 to assigned"),
 			direction: core,
 			wantAppFilter: ApplicationFilter{
-				FilterID :1,
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP("192.168.1.1")),
 				DstIP:        ip2int(net.ParseIP(ueAddress)),
 				SrcPortRange: NewRangeMatchPortRange(80, 400),
@@ -622,7 +622,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 80-400 to assigned"),
 			direction: access,
 			wantAppFilter: ApplicationFilter{
-				FilterID :1,
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP(ueAddress)),
 				DstIP:        ip2int(net.ParseIP("192.168.1.1")),
 				SrcPortRange: newWildcardPortRange(),
