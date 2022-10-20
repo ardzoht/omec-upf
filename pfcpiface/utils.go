@@ -38,7 +38,7 @@ func has2ndBit(f uint8) bool {
 }
 
 func has5thBit(f uint8) bool {
-	return (f & 0x010) == 1
+	return (f&0x010)>>4 == 1
 }
 
 func inc(ip net.IP) {
