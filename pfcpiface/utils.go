@@ -36,6 +36,10 @@ func setTeidAllocFeature(features ...uint8) {
 	features[0] = features[0] | 0x10
 }
 
+func has1stBit(f uint8) bool {
+	return (f & 0x01) == 1
+}
+
 func has2ndBit(f uint8) bool {
 	return (f&0x02)>>1 == 1
 }
