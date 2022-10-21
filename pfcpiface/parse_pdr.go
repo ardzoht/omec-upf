@@ -265,6 +265,7 @@ func CreatePortRangeCartesianProduct(src, dst PortRange) ([]portRangeTernaryCart
 }
 
 type ApplicationFilter struct {
+	FilterID     uint32
 	SrcIP        uint32
 	DstIP        uint32
 	SrcPortRange PortRange
@@ -288,15 +289,19 @@ type Pdr struct {
 
 	AppFilter ApplicationFilter
 
-	Precedence  uint32
-	PdrID       uint32
-	FseID       uint64
-	FseidIP     uint32
-	CtrID       uint32
-	FarID       uint32
-	QerIDList   []uint32
-	NeedDecap   uint8
-	AllocIPFlag bool
+	Precedence    uint32
+	PdrID         uint32
+	FseID         uint64
+	FseidIP       uint32
+	CtrID         uint32
+	FarID         uint32
+	QerIDList     []uint32
+	NeedDecap     uint8
+	AllocIPFlag   bool
+	AllocTEIDFlag bool
+
+	ChooseID     uint8
+	ChooseIDFlag bool
 }
 
 func needAllocIP(ueIPaddr *ie.UEIPAddressFields) bool {
@@ -305,6 +310,32 @@ func needAllocIP(ueIPaddr *ie.UEIPAddressFields) bool {
 	}
 
 	return true
+}
+
+func sameTeidAllocPerSession(teid *ie.FTEIDFields) bool {
+	return teid.HasChID()
+}
+
+func needTeidAlloc(teid *ie.FTEIDFields) bool {
+	return teid.HasCh()
+}
+
+func allocateTEID(p *Pdr, upf *Upf) error {
+	var err error
+	p.TunnelTEID, err = upf.teidAllocator.Allocate()
+	if err != nil {
+		return err
+	}
+
+	switch p.SrcIface {
+	case access:
+		p.TunnelIP4Dst = ip2int(upf.AccessIP)
+	case core:
+		p.TunnelIP4Dst = ip2int(upf.CoreIP)
+	}
+	p.TunnelTEIDMask = 0xFFFFFFFF
+	p.TunnelIP4DstMask = 0xFFFFFFFF
+	return nil
 }
 
 func (af ApplicationFilter) String() string {
@@ -316,10 +347,10 @@ func (af ApplicationFilter) String() string {
 func (p Pdr) String() string {
 	return fmt.Sprintf("PDR(id=%v, F-SEID=%v, srcIface=%v, tunnelIPv4Dst=%v/%x, "+
 		"tunnelTEID=%v/%x, ueAddress=%v, applicationFilter=%v, precedence=%v, F-SEID IP=%v, "+
-		"counterID=%v, farID=%v, qerIDs=%v, needDecap=%v, allocIPFlag=%v)",
+		"counterID=%v, farID=%v, qerIDs=%v, needDecap=%v, allocIPFlag=%v, allocTEIDFlag=%v, chooseID=%v)",
 		p.PdrID, p.FseID, p.SrcIface, int2ip(p.TunnelIP4Dst), p.TunnelIP4DstMask,
 		p.TunnelTEID, p.TunnelTEIDMask, int2ip(p.UeAddress), p.AppFilter, p.Precedence,
-		p.FseidIP, p.CtrID, p.FarID, p.QerIDList, p.NeedDecap, p.AllocIPFlag)
+		p.FseidIP, p.CtrID, p.FarID, p.QerIDList, p.NeedDecap, p.AllocIPFlag, p.AllocTEIDFlag, p.ChooseID)
 }
 
 func (p Pdr) IsAppFilterEmpty() bool {
@@ -378,12 +409,13 @@ func (p *Pdr) parseSourceInterfaceIE(srcIfaceIE *ie.IE) error {
 		return err
 	}
 
-	if srcIface == ie.SrcInterfaceCPFunction {
+	switch srcIface {
+	case ie.SrcInterfaceCPFunction:
 		return ErrUnsupported("Source Interface CP Function", srcIface)
-	} else if srcIface == ie.SrcInterfaceAccess {
+	case ie.SrcInterfaceAccess:
 		p.SrcIface = access
 		p.SrcIfaceMask = 0xFF
-	} else if srcIface == ie.SrcInterfaceCore {
+	case ie.SrcInterfaceCore:
 		p.SrcIface = core
 		p.SrcIfaceMask = 0xFF
 	}
@@ -391,20 +423,48 @@ func (p *Pdr) parseSourceInterfaceIE(srcIfaceIE *ie.IE) error {
 	return nil
 }
 
-func (p *Pdr) parseFTEID(teidIE *ie.IE) error {
+func (p *Pdr) parseFTEID(teidIE *ie.IE, upf *Upf, session *PFCPSession) error {
 	fteid, err := teidIE.FTEID()
 	if err != nil {
 		return err
 	}
 
-	teid := fteid.TEID
-	tunnelIPv4Address := fteid.IPv4Address
+	if !needTeidAlloc(fteid) {
+		teid := fteid.TEID
+		tunnelIPv4Address := fteid.IPv4Address
 
-	if teid != 0 {
-		p.TunnelTEID = teid
-		p.TunnelTEIDMask = 0xFFFFFFFF
-		p.TunnelIP4Dst = ip2int(tunnelIPv4Address)
-		p.TunnelIP4DstMask = 0xFFFFFFFF
+		if teid != 0 {
+			p.TunnelTEID = teid
+			p.TunnelTEIDMask = 0xFFFFFFFF
+			p.TunnelIP4Dst = ip2int(tunnelIPv4Address)
+			p.TunnelIP4DstMask = 0xFFFFFFFF
+		}
+		return nil
+	}
+
+	// Allocate TEIDs on UP function
+	p.AllocTEIDFlag = true
+	if sameTeidAllocPerSession(fteid) {
+		choosedPdr := findChoosedPdr(session, fteid.ChooseID)
+		if choosedPdr == nil {
+			// Set this PDR to the choosed one on the session
+			p.ChooseIDFlag = true
+			p.ChooseID = fteid.ChooseID
+			err := allocateTEID(p, upf)
+			if err != nil {
+				return err
+			}
+		} else {
+			p.TunnelTEID = choosedPdr.TunnelTEID
+			p.TunnelTEIDMask = choosedPdr.TunnelTEIDMask
+			p.TunnelIP4Dst = choosedPdr.TunnelIP4Dst
+			p.TunnelIP4DstMask = choosedPdr.TunnelIP4DstMask
+		}
+	} else {
+		err := allocateTEID(p, upf)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -464,15 +524,37 @@ func (p *Pdr) parseApplicationID(ie *ie.IE, appPFDs map[string]appPFD) error {
 	return nil
 }
 
-func (p *Pdr) parseSDFFilter(ie *ie.IE) error {
+func (p *Pdr) parseSDFFilter(ie *ie.IE, session *PFCPSession) error {
 	sdfFields, err := ie.SDFFilter()
 	if err != nil {
 		return err
 	}
 
-	flowDesc := sdfFields.FlowDescription
-	if flowDesc == "" {
-		return ErrOperationFailedWithReason("parse SDF Filter", "empty filter description")
+	// Handle bidirectional flows
+	if sdfFields.HasBID() {
+		p.AppFilter.FilterID = sdfFields.SDFFilterID
+		sdfFilter := findSDFFilter(session, sdfFields.SDFFilterID)
+
+		if sdfFilter != nil {
+			p.AppFilter.DstIP = sdfFilter.SrcIP
+			p.AppFilter.DstIPMask = sdfFilter.SrcIPMask
+			p.AppFilter.SrcIP = sdfFilter.DstIP
+			p.AppFilter.SrcIPMask = sdfFilter.DstIPMask
+			p.AppFilter.DstPortRange = sdfFilter.SrcPortRange
+			p.AppFilter.SrcPortRange = sdfFilter.DstPortRange
+
+			p.AppFilter.Proto = sdfFilter.Proto
+			p.AppFilter.ProtoMask = sdfFilter.ProtoMask
+			return nil
+		}
+	}
+
+	var flowDesc string
+	if sdfFields.HasFD() {
+		flowDesc = sdfFields.FlowDescription
+		if flowDesc == "" {
+			return ErrOperationFailedWithReason("parse SDF Filter", "empty filter description")
+		}
 	}
 
 	log.Debugw(
@@ -524,7 +606,7 @@ func (p *Pdr) parseSDFFilter(ie *ie.IE) error {
 	return nil
 }
 
-func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPool) error {
+func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPool, upf *Upf, session *PFCPSession) error {
 	for _, pdiIE := range pdiIEs {
 		switch pdiIE.Type {
 		case ie.UEIPAddress:
@@ -538,7 +620,7 @@ func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPoo
 				return err
 			}
 		case ie.FTEID:
-			if err := p.parseFTEID(pdiIE); err != nil {
+			if err := p.parseFTEID(pdiIE, upf, session); err != nil {
 				log.Errorf("Failed to parse F-TEID IE: %v", err)
 				return err
 			}
@@ -564,7 +646,7 @@ func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPoo
 				return err
 			}
 		case ie.SDFFilter:
-			if err := p.parseSDFFilter(ie2); err != nil {
+			if err := p.parseSDFFilter(ie2, session); err != nil {
 				log.Errorf("Failed to parse SDF Filter IE: %v", err)
 				return err
 			}
@@ -574,11 +656,11 @@ func (p *Pdr) parsePDI(pdiIEs []*ie.IE, appPFDs map[string]appPFD, ippool *IPPoo
 	return nil
 }
 
-func (p *Pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippool *IPPool) error {
+func (p *Pdr) parsePDR(ie1 *ie.IE, appPFDs map[string]appPFD, ippool *IPPool, upf *Upf, session *PFCPSession) error {
 	/* reset outerHeaderRemoval to begin with */
 	outerHeaderRemoval := uint8(0)
 	p.QerIDList = make([]uint32, 0)
-	p.FseID = seid
+	p.FseID = session.localSEID
 
 	pdrID, err := ie1.PDRID()
 	if err != nil {
@@ -603,7 +685,7 @@ func (p *Pdr) parsePDR(ie1 *ie.IE, seid uint64, appPFDs map[string]appPFD, ippoo
 		outerHeaderRemoval = 1
 	}
 
-	err = p.parsePDI(pdi, appPFDs, ippool)
+	err = p.parsePDI(pdi, appPFDs, ippool, upf, session)
 	if err != nil && !errors.Is(err, errBadFilterDesc) {
 		return err
 	}

@@ -29,6 +29,7 @@ func Test_parsePDR(t *testing.T) {
 	qerID := uint32(4)
 	farID := uint32(2)
 	teid := uint32(1234)
+	upf := &Upf{}
 
 	for _, scenario := range []pdrTestCase{
 		{
@@ -121,7 +122,9 @@ func Test_parsePDR(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			err := mockPDR.parsePDR(scenario.input, FSEID, mockMapPFD, mockIPPool)
+			session := &PFCPSession{localSEID: FSEID}
+
+			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.NoError(t, err)
 
 			assert.Equal(t, mockPDR, scenario.expected)
@@ -131,6 +134,7 @@ func Test_parsePDR(t *testing.T) {
 
 func TestParsePDRShouldError(t *testing.T) {
 	var FSEID uint64 = 100
+	upf := &Upf{}
 
 	for _, scenario := range []pdrTestCase{
 		{
@@ -160,7 +164,9 @@ func TestParsePDRShouldError(t *testing.T) {
 			mockPDR := &Pdr{}
 			mockIPPool, _ := NewIPPool("10.0.0.0")
 
-			err := mockPDR.parsePDR(scenario.input, FSEID, mockMapPFD, mockIPPool)
+			session := &PFCPSession{localSEID: FSEID}
+
+			err := mockPDR.parsePDR(scenario.input, mockMapPFD, mockIPPool, upf, session)
 			require.Error(t, err)
 
 			assert.Equal(t, scenario.expected, mockPDR)
@@ -547,6 +553,7 @@ func Test_portRange_Width(t *testing.T) {
 
 func Test_pdr_parseSDFFilter(t *testing.T) {
 	ueAddress := "17.0.0.1"
+	session := &PFCPSession{localSEID: 1}
 
 	newFilter := func(flowDesc string) *ie.IE {
 		return ie.NewSDFFilter(flowDesc, "", "", "", 1)
@@ -564,6 +571,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 to assigned 80-400"),
 			direction: core,
 			wantAppFilter: ApplicationFilter{
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP("192.168.1.1")),
 				DstIP:        ip2int(net.ParseIP(ueAddress)),
 				SrcPortRange: NewRangeMatchPortRange(80, 400),
@@ -580,6 +588,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 to assigned 80-400"),
 			direction: access,
 			wantAppFilter: ApplicationFilter{
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP(ueAddress)),
 				DstIP:        ip2int(net.ParseIP("192.168.1.1")),
 				SrcPortRange: newWildcardPortRange(),
@@ -596,6 +605,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 80-400 to assigned"),
 			direction: core,
 			wantAppFilter: ApplicationFilter{
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP("192.168.1.1")),
 				DstIP:        ip2int(net.ParseIP(ueAddress)),
 				SrcPortRange: NewRangeMatchPortRange(80, 400),
@@ -612,6 +622,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 			sdfIE:     newFilter("permit out udp from 192.168.1.1/32 80-400 to assigned"),
 			direction: access,
 			wantAppFilter: ApplicationFilter{
+				FilterID:     1,
 				SrcIP:        ip2int(net.ParseIP(ueAddress)),
 				DstIP:        ip2int(net.ParseIP("192.168.1.1")),
 				SrcPortRange: newWildcardPortRange(),
@@ -640,7 +651,7 @@ func Test_pdr_parseSDFFilter(t *testing.T) {
 				UeAddress: ip2int(net.ParseIP("17.0.0.1")),
 				SrcIface:  tt.direction,
 			}
-			if err := p.parseSDFFilter(tt.sdfIE); (err != nil) != tt.wantErr {
+			if err := p.parseSDFFilter(tt.sdfIE, session); (err != nil) != tt.wantErr {
 				t.Errorf("parseSDFFilter() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -710,7 +721,10 @@ func Test_pdr_parsePDI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Pdr{}
-			if err := p.parsePDI(tt.args.pdiIEs, tt.args.appPFDs, tt.args.ippool); (err != nil) != tt.wantErr {
+			upf := &Upf{}
+			session := &PFCPSession{localSEID: 1}
+
+			if err := p.parsePDI(tt.args.pdiIEs, tt.args.appPFDs, tt.args.ippool, upf, session); (err != nil) != tt.wantErr {
 				t.Errorf("parsePDI() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

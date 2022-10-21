@@ -4,6 +4,7 @@
 package pfcpiface
 
 import (
+	"math"
 	"net"
 	"time"
 
@@ -43,12 +44,15 @@ type Upf struct {
 	AccessIP          net.IP
 	CoreIP            net.IP
 	NodeID            string
-	ippool            *IPPool
-	peers             []string
-	dnn               string
-	ReportNotifyChan  chan uint64
-	sliceInfo         *SliceInfo
-	readTimeout       time.Duration
+
+	ippool        *IPPool
+	teidAllocator *IDAllocator
+
+	peers            []string
+	dnn              string
+	ReportNotifyChan chan uint64
+	sliceInfo        *SliceInfo
+	readTimeout      time.Duration
 
 	Datapath
 	maxReqRetries uint8
@@ -58,7 +62,6 @@ type Upf struct {
 }
 
 // to be replaced with go-pfcp structs
-
 // Don't change these values.
 const (
 	tunnelGTPUPort = 2152
@@ -171,6 +174,8 @@ func NewUPF(conf *Conf, fp Datapath) *Upf {
 			log.Fatal("ip pool init failed", err)
 		}
 	}
+
+	u.teidAllocator = NewIDAllocator(1, math.MaxUint32)
 
 	u.Datapath.SetUpfInfo(u, conf)
 
