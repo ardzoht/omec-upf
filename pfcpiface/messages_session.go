@@ -85,6 +85,7 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 	addPDRs := make([]Pdr, 0, MaxItems)
 	addFARs := make([]Far, 0, MaxItems)
 	addQERs := make([]Qer, 0, MaxItems)
+	addURRs := make([]Urr, 0, MaxItems)
 
 	for _, cPDR := range sereq.CreatePDR {
 		var p Pdr
@@ -119,6 +120,17 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 		addQERs = append(addQERs, q)
 	}
 
+	for _, cURR := range sereq.CreateURR {
+		var u Urr
+		if err := u.parseURR(cURR, session.localSEID); err != nil {
+			return errProcessReply(err, ie.CauseRequestRejected)
+		}
+
+		u.FseidIP = fseidIP
+		session.CreateURR(u)
+		addURRs = append(addURRs, u)
+	}
+
 	session.MarkSessionQer(session.Qers)
 	// FIXME: since PacketForwardingRules doesn't store pointers,
 	//  we must also mark session QERs in addQERs.
@@ -131,6 +143,7 @@ func (pConn *PFCPConn) handleSessionEstablishmentRequest(msg message.Message) (m
 		Pdrs: addPDRs,
 		Fars: addFARs,
 		Qers: addQERs,
+		Urrs: addURRs,
 	}
 
 	cause := upf.SendMsgToUPF(UpfMsgTypeAdd, session, updated)
@@ -222,6 +235,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	addPDRs := make([]Pdr, 0, MaxItems)
 	addFARs := make([]Far, 0, MaxItems)
 	addQERs := make([]Qer, 0, MaxItems)
+	addURRs := make([]Urr, 0, MaxItems)
 
 	for _, cPDR := range smreq.CreatePDR {
 		var p Pdr
@@ -259,10 +273,22 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		addQERs = append(addQERs, q)
 	}
 
+	for _, cURR := range smreq.CreateURR {
+		var u Urr
+		if err := u.parseURR(cURR, localSEID); err != nil {
+			return sendError(err)
+		}
+
+		u.FseidIP = fseidIP
+		session.CreateURR(u)
+		addURRs = append(addURRs, u)
+	}
+
 	updated := PacketForwardingRules{
 		Pdrs: addPDRs,
 		Fars: addFARs,
 		Qers: addQERs,
+		Urrs: addURRs,
 	}
 
 	cause := upf.SendMsgToUPF(UpfMsgTypeAdd, session, updated)
@@ -273,6 +299,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	updatePDRs := make([]Pdr, 0, MaxItems)
 	updateFARs := make([]Far, 0, MaxItems)
 	updateQERs := make([]Qer, 0, MaxItems)
+	updateURRs := make([]Urr, 0, MaxItems)
 	endMarkerList := make([]EndMarker, 0, MaxItems)
 
 	// maintain a copy of session before updating for session modification
@@ -286,9 +313,11 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	oldSession.Pdrs = make([]Pdr, len(session.Pdrs))
 	oldSession.Fars = make([]Far, len(session.Fars))
 	oldSession.Qers = make([]Qer, len(session.Qers))
+	oldSession.Urrs = make([]Urr, len(session.Urrs))
 	copy(oldSession.Pdrs, session.Pdrs)
 	copy(oldSession.Fars, session.Fars)
 	copy(oldSession.Qers, session.Qers)
+	copy(oldSession.Urrs, session.Urrs)
 
 	for _, uPDR := range smreq.UpdatePDR {
 		var (
@@ -353,6 +382,25 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		updateQERs = append(updateQERs, q)
 	}
 
+	for _, uURR := range smreq.UpdateURR {
+		var (
+			u   Urr
+			err error
+		)
+		if err := u.parseURR(uURR, localSEID); err != nil {
+			return sendError(err)
+		}
+
+		u.FseidIP = fseidIP
+		err = session.UpdateURR(u)
+		if err != nil {
+			log.Error("session URR update failed ", err)
+			continue
+		}
+
+		updateURRs = append(updateURRs, u)
+	}
+
 	session.MarkSessionQer(session.Qers)
 	// FIXME: since PacketForwardingRules doesn't store pointers,
 	//  we must also mark session QERs in addQERs.
@@ -363,6 +411,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		Pdrs: updatePDRs,
 		Fars: updateFARs,
 		Qers: updateQERs,
+		Urrs: updateURRs,
 	}
 
 	// Send the session before updating to datapath
@@ -381,6 +430,7 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 	delPDRs := make([]Pdr, 0, MaxItems)
 	delFARs := make([]Far, 0, MaxItems)
 	delQERs := make([]Qer, 0, MaxItems)
+	delURRs := make([]Urr, 0, MaxItems)
 
 	for _, rPDR := range smreq.RemovePDR {
 		pdrID, err := rPDR.PDRID()
@@ -425,10 +475,25 @@ func (pConn *PFCPConn) handleSessionModificationRequest(msg message.Message) (me
 		delQERs = append(delQERs, *q)
 	}
 
+	for _, dURR := range smreq.RemoveURR {
+		urrID, err := dURR.URRID()
+		if err != nil {
+			return sendError(err)
+		}
+
+		u, err := session.RemoveURR(urrID)
+		if err != nil {
+			return sendError(err)
+		}
+
+		delURRs = append(delURRs, *u)
+	}
+
 	deleted := PacketForwardingRules{
 		Pdrs: delPDRs,
 		Fars: delFARs,
 		Qers: delQERs,
+		Urrs: delURRs,
 	}
 
 	cause = upf.SendMsgToUPF(UpfMsgTypeDel, session, deleted)
